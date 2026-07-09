@@ -65,12 +65,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ) : (
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300 hidden md:block">DF</h2>
           )}
-          <button onClick={handleLogout} className="md:hidden text-slate-500 hover:text-red-500">
-            <LogOut className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-4 md:hidden">
+            <button onClick={() => setIsSettingsOpen(true)} className="text-slate-500 hover:text-primary transition-colors">
+              <Settings className="w-6 h-6" />
+            </button>
+            <button onClick={handleLogout} className="text-slate-500 hover:text-red-500 transition-colors">
+              <LogOut className="w-6 h-6" />
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 px-4 pb-4 md:pt-4 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto min-h-0">
+        <div className="flex-1 px-4 pb-4 md:pt-4 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;

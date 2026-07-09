@@ -54,8 +54,8 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Visão Geral</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Resumo da tua saúde financeira.</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Visão Geral</h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">Resumo da tua saúde financeira.</p>
         </div>
         <div className="flex gap-4">
           <div className="w-32">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
                 <Wallet className="w-5 h-5 text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-500" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-500">{formatCurrency(summary.balance)}</p>
+            <p className="text-2xl md:text-3xl font-bold text-white group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-500">{formatCurrency(summary.balance)}</p>
           </div>
         </div>
 
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                 <ArrowUpRight className="w-5 h-5 text-emerald-600 group-hover:text-white transition-colors duration-500" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-500 group-hover:text-white transition-colors duration-500">{formatCurrency(summary.income)}</p>
+            <p className="text-2xl md:text-3xl font-bold text-emerald-600 dark:text-emerald-500 group-hover:text-white transition-colors duration-500">{formatCurrency(summary.income)}</p>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                 <ArrowDownRight className="w-5 h-5 text-rose-600 group-hover:text-white transition-colors duration-500" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-rose-600 dark:text-rose-500 group-hover:text-white transition-colors duration-500">{formatCurrency(summary.expense)}</p>
+            <p className="text-2xl md:text-3xl font-bold text-rose-600 dark:text-rose-500 group-hover:text-white transition-colors duration-500">{formatCurrency(summary.expense)}</p>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                 <TrendingUp className="w-5 h-5 text-primary group-hover:text-white transition-colors duration-500" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-white transition-colors duration-500">{formatCurrency(summary.investments || 0)}</p>
+            <p className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white group-hover:text-white transition-colors duration-500">{formatCurrency(summary.investments || 0)}</p>
           </div>
         </div>
       </div>
