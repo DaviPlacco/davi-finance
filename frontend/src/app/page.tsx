@@ -46,17 +46,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
       {/* Abstract Background Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/20 blur-[120px] pointer-events-none" />
 
       <div className="glass-card w-full max-w-md p-8 md:p-10 z-10 mx-4 shadow-2xl shadow-indigo-900/10">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-2">
             Davi Finance
           </h1>
-          <p className="text-slate-500 font-medium">Acesso Exclusivo</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Acesso Exclusivo</p>
         </div>
 
         {error && (
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Utilizador
             </label>
             <div className="relative">
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl bg-white/50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 font-medium"
+                className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700/50 rounded-xl bg-white/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white font-medium"
                 placeholder="Introduz o teu utilizador"
                 required
               />
@@ -87,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Palavra-passe
             </label>
             <div className="relative">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl bg-white/50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 font-medium"
+                className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700/50 rounded-xl bg-white/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white font-medium"
                 placeholder="••••••••"
                 required
               />
