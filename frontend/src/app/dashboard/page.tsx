@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const [filterMonth, setFilterMonth] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         const query = new URLSearchParams();
         if (filterYear) query.append("year", filterYear);

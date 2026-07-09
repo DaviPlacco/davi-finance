@@ -19,7 +19,7 @@ export default function OrcamentosPage() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const now = new Date();
       // Fetch only expenses for current month and year

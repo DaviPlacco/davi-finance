@@ -47,7 +47,7 @@ export default function GestaoPage() {
     fetchData();
   }, [filterYear, filterMonth, filterType, filterCategoryId]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const query = new URLSearchParams();
       if (filterYear) query.append("year", filterYear);

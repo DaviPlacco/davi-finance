@@ -21,7 +21,7 @@ export default function InvestimentosPage() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const res = await api.get("/investments");
       setInvestments(res.data);
