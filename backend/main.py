@@ -1,0 +1,242 @@
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from sqlalchemy import extract
+from datetime import timedelta
+import calendar
+from typing import Optional
+import models, schemas, auth
+from database import engine, get_db
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Davi Finance API")
+
+# CORS setup
+# Em produção (GitHub Pages), a variável ALLOWED_ORIGINS deve ser configurada
+# Ex: ALLOWED_ORIGINS="https://teunome.github.io"
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
+origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ----------------- AUTH -----------------
+@app.post("/token", response_model=schemas.Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == form_data.username).first()
+    if not user or not auth.verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/me", response_model=schemas.UserResponse)
+def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
+    return current_user
+
+@app.post("/register", response_model=schemas.UserResponse)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Utilizador já existe")
+    
+    hashed_password = auth.get_password_hash(user.password)
+    new_user = models.User(username=user.username, password_hash=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Criar categorias padrão
+    default_categories = [
+        models.Category(name="Salário", type=models.CategoryType.INCOME, color="#10b981", user_id=new_user.id),
+        models.Category(name="Outras Receitas", type=models.CategoryType.INCOME, color="#34d399", user_id=new_user.id),
+        models.Category(name="Alimentação", type=models.CategoryType.EXPENSE, color="#f43f5e", user_id=new_user.id),
+        models.Category(name="Habitação", type=models.CategoryType.EXPENSE, color="#6366f1", user_id=new_user.id),
+        models.Category(name="Transporte", type=models.CategoryType.EXPENSE, color="#f59e0b", user_id=new_user.id)
+    ]
+    db.add_all(default_categories)
+    db.commit()
+    
+    return new_user
+
+# ----------------- CATEGORIES -----------------
+@app.post("/categories", response_model=schemas.CategoryResponse)
+def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_category = models.Category(**category.model_dump(), user_id=current_user.id)
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+@app.get("/categories", response_model=list[schemas.CategoryResponse])
+def read_categories(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    return db.query(models.Category).filter(models.Category.user_id == current_user.id).all()
+
+@app.delete("/categories/{category_id}")
+def delete_category(category_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    category = db.query(models.Category).filter(models.Category.id == category_id, models.Category.user_id == current_user.id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    db.delete(category)
+    db.commit()
+    return {"message": "Category deleted"}
+
+@app.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
+def update_category(category_id: int, category_update: schemas.CategoryCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    category = db.query(models.Category).filter(models.Category.id == category_id, models.Category.user_id == current_user.id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    for key, value in category_update.model_dump().items():
+        setattr(category, key, value)
+        
+    db.commit()
+    db.refresh(category)
+    return category
+
+# ----------------- TRANSACTIONS -----------------
+@app.post("/transactions", response_model=schemas.TransactionResponse)
+def create_transaction(transaction: schemas.TransactionCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    # Verify category belongs to user
+    category = db.query(models.Category).filter(models.Category.id == transaction.category_id, models.Category.user_id == current_user.id).first()
+    if not category:
+        raise HTTPException(status_code=400, detail="Invalid category_id")
+    
+    db_transaction = models.Transaction(**transaction.model_dump(), user_id=current_user.id)
+    db.add(db_transaction)
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
+
+@app.get("/transactions", response_model=list[schemas.TransactionResponse])
+def read_transactions(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    type: Optional[str] = None,
+    category_id: Optional[int] = None,
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    query = db.query(models.Transaction).filter(models.Transaction.user_id == current_user.id)
+    if year:
+        query = query.filter(extract('year', models.Transaction.date) == year)
+    if month:
+        query = query.filter(extract('month', models.Transaction.date) == month)
+    if type:
+        query = query.filter(models.Transaction.type == type)
+    if category_id:
+        query = query.filter(models.Transaction.category_id == category_id)
+        
+    return query.order_by(models.Transaction.date.desc()).all()
+
+@app.delete("/transactions/{transaction_id}")
+def delete_transaction(transaction_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id, models.Transaction.user_id == current_user.id).first()
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    db.delete(transaction)
+    db.commit()
+    return {"message": "Transaction deleted"}
+
+# ----------------- INVESTMENTS -----------------
+@app.post("/investments", response_model=schemas.InvestmentResponse)
+def create_investment(investment: schemas.InvestmentCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_investment = models.Investment(**investment.model_dump(), user_id=current_user.id)
+    db.add(db_investment)
+    db.commit()
+    db.refresh(db_investment)
+    return db_investment
+
+@app.get("/investments", response_model=list[schemas.InvestmentResponse])
+def read_investments(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    return db.query(models.Investment).filter(models.Investment.user_id == current_user.id).all()
+
+@app.put("/investments/{investment_id}", response_model=schemas.InvestmentResponse)
+def update_investment(investment_id: int, investment: schemas.InvestmentCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_investment = db.query(models.Investment).filter(models.Investment.id == investment_id, models.Investment.user_id == current_user.id).first()
+    if not db_investment:
+        raise HTTPException(status_code=404, detail="Investment not found")
+    for key, value in investment.model_dump().items():
+        setattr(db_investment, key, value)
+    db.commit()
+    db.refresh(db_investment)
+    return db_investment
+
+@app.delete("/investments/{investment_id}")
+def delete_investment(investment_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_investment = db.query(models.Investment).filter(models.Investment.id == investment_id, models.Investment.user_id == current_user.id).first()
+    if not db_investment:
+        raise HTTPException(status_code=404, detail="Investment not found")
+    db.delete(db_investment)
+    db.commit()
+    return {"message": "Investment deleted"}
+
+# Get summary
+@app.get("/summary")
+def get_summary(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    query = db.query(models.Transaction).filter(models.Transaction.user_id == current_user.id)
+    if year:
+        query = query.filter(extract('year', models.Transaction.date) == year)
+    if month:
+        query = query.filter(extract('month', models.Transaction.date) == month)
+        
+    transactions = query.all()
+    investments = db.query(models.Investment).filter(models.Investment.user_id == current_user.id).all()
+    
+    total_income = sum(t.amount for t in transactions if t.type == models.TransactionType.INCOME)
+    total_expense = sum(t.amount for t in transactions if t.type == models.TransactionType.EXPENSE)
+    total_invested = sum(i.balance for i in investments)
+    
+    chart_data = []
+    
+    # Group chart data
+    if year and month:
+        num_days = calendar.monthrange(year, month)[1]
+        for day in range(1, num_days + 1):
+            daily_income = sum(t.amount for t in transactions if t.date.day == day and t.type == models.TransactionType.INCOME)
+            daily_expense = sum(t.amount for t in transactions if t.date.day == day and t.type == models.TransactionType.EXPENSE)
+            chart_data.append({
+                "name": str(day),
+                "receitas": daily_income,
+                "despesas": daily_expense
+            })
+    else:
+        months_abbr = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+        for m in range(1, 13):
+            monthly_income = sum(t.amount for t in transactions if t.date.month == m and t.type == models.TransactionType.INCOME)
+            monthly_expense = sum(t.amount for t in transactions if t.date.month == m and t.type == models.TransactionType.EXPENSE)
+            chart_data.append({
+                "name": months_abbr[m-1],
+                "receitas": monthly_income,
+                "despesas": monthly_expense
+            })
+
+    return {
+        "balance": total_income - total_expense,
+        "income": total_income,
+        "expense": total_expense,
+        "investments": total_invested,
+        "chartData": chart_data
+    }
