@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  // basePath is injected by GitHub Actions automatically, DO NOT hardcode it here.
+  basePath: "/davi-finance",
   typescript: {
     ignoreBuildErrors: true,
   },
