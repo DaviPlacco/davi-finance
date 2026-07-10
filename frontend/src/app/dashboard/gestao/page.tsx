@@ -357,7 +357,7 @@ export default function GestaoPage() {
                           <td className="p-4 text-slate-600 text-sm font-medium">{formatDate(t.date)}</td>
                           <td className="p-4 text-slate-900 font-medium">{t.description || '-'}</td>
                           <td className="p-4">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${category?.color}20`, color: category?.color }}>
+                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap max-w-[120px] truncate text-center align-middle" style={{ backgroundColor: `${category?.color}20`, color: category?.color }} title={category?.name || 'Sem Categoria'}>
                               {category?.name || 'Sem Categoria'}
                             </span>
                           </td>
