@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart } from "lucide-react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart, Download, FileText } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSettings } from "@/lib/SettingsContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -177,6 +178,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       {val}
                     </button>
                   ))}
+                </div>
+              </div>
+              {/* Export Data Settings */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Exportar Dados</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={exportToCSV} className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-semibold text-sm">
+                    <FileText className="w-5 h-5 text-emerald-500" />
+                    Exportar CSV
+                  </button>
+                  <button onClick={exportToPDF} className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-semibold text-sm">
+                    <Download className="w-5 h-5 text-rose-500" />
+                    Exportar PDF
+                  </button>
                 </div>
               </div>
             </div>
