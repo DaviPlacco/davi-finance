@@ -17,11 +17,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Davi Finance",
   description: "A tua plataforma de gestão financeira inteligente e premium.",
-  icons: {
-    icon: "/davi-finance/favicon.ico",
-    shortcut: "/davi-finance/favicon.ico",
-    apple: "/davi-finance/favicon.ico",
-  }
 };
 
 export default function RootLayout({
