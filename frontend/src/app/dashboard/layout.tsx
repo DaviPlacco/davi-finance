@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart, Download, FileText } from "lucide-react";
+import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart, Download, FileText, LineChart } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSettings } from "@/lib/SettingsContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -50,6 +50,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Gestão", href: "/dashboard/gestao", icon: Wallet },
     { name: "Investimentos", href: "/dashboard/investimentos", icon: TrendingUp },
+    { name: "Previsão", href: "/dashboard/previsao", icon: LineChart },
     { name: "Orçamentos", href: "/dashboard/orcamentos", icon: PieChart },
   ];
 
