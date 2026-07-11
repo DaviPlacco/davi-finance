@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 
-import { TrendingUp, Calculator, PiggyBank, Target, CalendarDays, LineChart as LineChartIcon } from "lucide-react";
+import { TrendingUp, Calculator, PiggyBank, Target, CalendarDays, LineChart as LineChartIcon, Wallet } from "lucide-react";
 import {
   LineChart,
   Line,
