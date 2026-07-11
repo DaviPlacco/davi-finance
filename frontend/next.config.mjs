@@ -2,6 +2,7 @@
 const nextConfig = {
   output: "export",
   basePath: "/davi-finance",
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
