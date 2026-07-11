@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { formatCurrency } from "@/lib/utils";
+
 import { TrendingUp, Calculator, PiggyBank, Target, CalendarDays, LineChart as LineChartIcon } from "lucide-react";
 import {
   LineChart,
@@ -20,6 +20,10 @@ export default function PrevisaoPage() {
   const [monthlyContribution, setMonthlyContribution] = useState<string>("500");
   const [annualRate, setAnnualRate] = useState<string>("8");
   const [customYears, setCustomYears] = useState<string>("15");
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
+  };
 
   const calculateFutureValue = (principal: number, monthlyAdd: number, ratePercent: number, years: number) => {
     if (years === 0) return principal;
