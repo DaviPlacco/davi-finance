@@ -79,7 +79,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         <div className="flex-1 px-4 pb-4 md:pt-4 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            // Strip trailing slash from pathname for comparison, except for root '/'
+            const normalizedPathname = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
+            const isActive = normalizedPathname === item.href;
             const Icon = item.icon;
             return (
               <Link
