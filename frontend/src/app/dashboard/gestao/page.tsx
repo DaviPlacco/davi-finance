@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { api } from "@/lib/api";
 import { Plus, Trash2, ChevronLeft, ChevronRight, TrendingUp, X } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
@@ -164,6 +164,28 @@ export default function GestaoPage() {
       showToast("Erro ao definir previsão.", "error");
     }
   };
+
+  const expensesByCategory = useMemo(() => {
+    // Filter only current visible transactions or ALL transactions?
+    // User wants "gastos totais em cada categoria", usually this means for the filtered view.
+    // We will use the fetched `transactions` which is already filtered by year/month from the API.
+    const expenses = transactions.filter((t: any) => t.type === 'expense');
+    
+    const grouped = expenses.reduce((acc: any, t: any) => {
+      acc[t.category_id] = (acc[t.category_id] || 0) + t.amount;
+      return acc;
+    }, {});
+
+    return Object.keys(grouped).map(catId => {
+      const category = categories.find((c: any) => c.id === parseInt(catId));
+      return {
+        id: catId,
+        name: category ? category.name : "Sem Categoria",
+        color: category ? category.color : "#94a3b8",
+        amount: grouped[catId]
+      };
+    }).sort((a, b) => b.amount - a.amount);
+  }, [transactions, categories]);
 
   if (loading) return <div className="animate-pulse p-8">A carregar...</div>;
 
@@ -455,6 +477,53 @@ export default function GestaoPage() {
           </div>
         )}
       </div>
+
+      {/* Category Expenses Summary */}
+      {expensesByCategory.length > 0 && (
+        <div className="mt-8 space-y-4 animate-in slide-in-from-bottom-5 fade-in duration-500 delay-150">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-rose-500" /> Top Categorias de Gastos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {expensesByCategory.map((cat, idx) => {
+              const maxAmount = expensesByCategory[0].amount;
+              const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
+              
+              return (
+                <div key={cat.id} className="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={cat.name}>
+                        {cat.name}
+                      </span>
+                    </div>
+                    <span className="font-bold text-rose-600 dark:text-rose-500">
+                      -{formatCurrency(cat.amount)}
+                    </span>
+                  </div>
+                  
+                  {/* Progress bar background */}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-2 rounded-full overflow-hidden relative z-10">
+                    <div 
+                      className="h-full rounded-full transition-all duration-1000 ease-out"
+                      style={{ 
+                        width: `${percent}%`, 
+                        backgroundColor: cat.color 
+                      }} 
+                    />
+                  </div>
+                  
+                  {/* Ranking Number */}
+                  <div className="absolute -right-3 -bottom-5 text-7xl font-black text-slate-900/5 dark:text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                    #{idx + 1}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (
