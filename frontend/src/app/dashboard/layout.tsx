@@ -33,6 +33,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // capitalize first letter
         setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
       }
+
+      // Auto-logout after 15 minutes of inactivity
+      let timeoutId: NodeJS.Timeout;
+      const resetTimer = () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("username");
+          router.push("/");
+        }, 900 * 1000); // 15 minutes
+      };
+
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      events.forEach(event => {
+        document.addEventListener(event, resetTimer);
+      });
+
+      resetTimer();
+
+      return () => {
+        clearTimeout(timeoutId);
+        events.forEach(event => {
+          document.removeEventListener(event, resetTimer);
+        });
+      };
     }
   }, [router]);
 
