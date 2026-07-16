@@ -9,6 +9,7 @@ import { CustomSelect } from "@/components/CustomSelect";
 export default function DashboardPage() {
   const [summary, setSummary] = useState({ balance: 0, income: 0, expense: 0, investments: 0, chartData: [] });
   const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -22,12 +23,14 @@ export default function DashboardPage() {
         if (filterYear) query.append("year", filterYear);
         if (filterMonth) query.append("month", filterMonth);
 
-        const [sumRes, transRes] = await Promise.all([
+        const [sumRes, transRes, catRes] = await Promise.all([
           api.get(`/summary?${query.toString()}`),
-          api.get(`/transactions?${query.toString()}`)
+          api.get(`/transactions?${query.toString()}`),
+          api.get("/categories")
         ]);
         setSummary(sumRes.data);
         setTransactions(transRes.data);
+        setCategories(catRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -206,7 +209,7 @@ export default function DashboardPage() {
                   <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
                     <div className="font-extrabold text-base">{t.description}</div>
                     <div className="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
-                      Categoria: {t.category_id}
+                      Categoria: {categories.find((c: any) => c.id === t.category_id)?.name || "Sem Categoria"}
                     </div>
                     {/* Arrow */}
                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-0 border-l-0 rotate-45" />
