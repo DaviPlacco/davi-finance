@@ -196,8 +196,15 @@ export default function DashboardPage() {
                 <div key={i} className="relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 hover:border-primary/50 transition-colors cursor-pointer bg-white dark:bg-slate-900">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-slate-500">{new Date(t.date).toLocaleDateString('pt-PT')}</span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${t.type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                      {t.type === 'income' ? 'Receita' : 'Despesa'}
+                    <span 
+                      className="text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap max-w-[100px] truncate"
+                      style={{ 
+                        backgroundColor: `${categories.find((c: any) => c.id === t.category_id)?.color || (t.type === 'income' ? '#10b981' : '#f43f5e')}20`, 
+                        color: categories.find((c: any) => c.id === t.category_id)?.color || (t.type === 'income' ? '#047857' : '#be123c') 
+                      }}
+                      title={categories.find((c: any) => c.id === t.category_id)?.name || (t.type === 'income' ? 'Receita' : 'Despesa')}
+                    >
+                      {categories.find((c: any) => c.id === t.category_id)?.name || (t.type === 'income' ? 'Receita' : 'Despesa')}
                     </span>
                   </div>
                   <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{t.description}</p>
