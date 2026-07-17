@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { api } from "@/lib/api";
-import { Plus, Trash2, ChevronLeft, ChevronRight, TrendingUp, X } from "lucide-react";
+import { Plus, Trash2, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useSettings } from "@/lib/SettingsContext";
+import { toast } from "sonner";
 
 export default function GestaoPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -25,13 +26,6 @@ export default function GestaoPage() {
   // Budget state
   const [budgetCategoryId, setBudgetCategoryId] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
-
-  const [toastMessage, setToastMessage] = useState<{title: string, type: 'success' | 'error'} | null>(null);
-
-  const showToast = (title: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ title, type });
-    setTimeout(() => setToastMessage(null), 7000);
-  };
 
   const { itemsPerPage } = useSettings();
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,12 +72,13 @@ export default function GestaoPage() {
         description,
         date
       });
-      // reset form
       setAmount("");
       setDescription("");
       fetchData();
+      toast.success("Registo adicionado com sucesso!");
     } catch (err) {
       console.error("Failed to add transaction");
+      toast.error("Erro ao adicionar registo");
     }
   };
 
@@ -103,8 +98,9 @@ export default function GestaoPage() {
         setCategoryId(res.data.id.toString());
         setIsAddingCategory(false);
         setNewCatName("");
+        toast.success("Categoria criada com sucesso!");
       } catch (err) {
-        alert("Erro ao criar categoria");
+        toast.error("Erro ao criar categoria");
       }
     }
   };
@@ -113,8 +109,10 @@ export default function GestaoPage() {
     try {
       await api.delete(`/transactions/${id}`);
       fetchData();
+      toast.success("Transação eliminada.");
     } catch (err) {
       console.error("Failed to delete transaction");
+      toast.error("Erro ao eliminar transação.");
     }
   };
 
@@ -125,9 +123,10 @@ export default function GestaoPage() {
         fetchData();
         if (categoryId === id.toString()) setCategoryId("");
         if (filterCategoryId === id.toString()) setFilterCategoryId("");
+        toast.success("Categoria eliminada com sucesso.");
       } catch (err) {
         console.error("Failed to delete category");
-        alert("Erro ao eliminar a categoria.");
+        toast.error("Erro ao eliminar a categoria.");
       }
     }
   };
@@ -157,11 +156,11 @@ export default function GestaoPage() {
         });
         setBudgetAmount("");
         fetchData();
-        showToast("Previsão de gastos atualizada com sucesso!", "success");
+        toast.success("Previsão de gastos atualizada com sucesso!");
       }
     } catch (err) {
       console.error("Failed to set budget");
-      showToast("Erro ao definir previsão.", "error");
+      toast.error("Erro ao definir previsão.");
     }
   };
 
@@ -522,16 +521,6 @@ export default function GestaoPage() {
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className={`fixed bottom-6 right-6 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 z-50 ${toastMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20' : 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20'}`}>
-          <div className="font-semibold text-sm">{toastMessage.title}</div>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-70 transition-opacity">
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
     </div>

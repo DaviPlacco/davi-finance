@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { api } from "./api";
+import { toast } from "sonner";
 
 // Helper for currency
 const formatCurrency = (value: number) => {
@@ -48,7 +49,7 @@ export const exportToCSV = async () => {
     document.body.removeChild(link);
   } catch (error) {
     console.error("Erro ao exportar CSV:", error);
-    alert("Erro ao exportar CSV. Verifica a consola.");
+    toast.error("Erro ao exportar CSV. Verifica a consola.");
   }
 };
 
@@ -139,6 +140,6 @@ export const exportToPDF = async () => {
 
   } catch (error) {
     console.error("Erro ao exportar PDF:", error);
-    alert("Erro ao exportar PDF. Verifica a consola.");
+    toast.error("Erro ao exportar PDF. Verifica a consola.");
   }
 };

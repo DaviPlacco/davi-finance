@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { TrendingUp, Plus, Target, PiggyBank, Pencil, Trash2 } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
+import { toast } from "sonner";
 
 export default function InvestimentosPage() {
   const [investments, setInvestments] = useState([]);
@@ -55,9 +56,10 @@ export default function InvestimentosPage() {
     if(window.confirm("Tem certeza que deseja apagar este investimento?")) {
       try {
         await api.delete(`/investments/${id}`);
+        toast.success("Investimento apagado com sucesso.");
         fetchData();
       } catch (err) {
-        alert("Erro ao apagar investimento");
+        toast.error("Erro ao apagar investimento");
       }
     }
   };
@@ -97,9 +99,11 @@ export default function InvestimentosPage() {
       setCustomAssetType("");
       setBalance("");
       setTarget("");
+      toast.success(editingId ? "Ativo atualizado com sucesso!" : "Ativo adicionado com sucesso!");
       fetchData();
     } catch (err) {
       console.error("Failed to save investment");
+      toast.error("Erro ao guardar ativo.");
     }
   };
 

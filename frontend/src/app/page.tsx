@@ -4,19 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       if (isRegistering) {
@@ -33,9 +32,10 @@ export default function LoginPage() {
 
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem("username", username);
+      toast.success(isRegistering ? "Conta criada com sucesso!" : `Bem-vindo de volta, ${username}!`);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(
+      toast.error(
         isRegistering 
           ? err.response?.data?.detail || "Erro ao criar conta. O utilizador já pode existir."
           : "Credenciais inválidas. Tenta novamente."
@@ -58,13 +58,6 @@ export default function LoginPage() {
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium">Acesso Exclusivo</p>
         </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm font-medium border border-red-100 flex items-center">
-            <div className="w-1.5 h-1.5 bg-red-600 rounded-full mr-2" />
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -128,7 +121,6 @@ export default function LoginPage() {
               type="button" 
               onClick={() => {
                 setIsRegistering(!isRegistering);
-                setError("");
               }}
               className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors"
             >
