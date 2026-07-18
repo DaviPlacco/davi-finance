@@ -183,3 +183,83 @@ export const exportToPDF = async () => {
     toast.error("Erro ao exportar PDF. Verifica a consola.");
   }
 };
+
+export const exportPrevisaoToCSV = (chartData: any[]) => {
+  try {
+    let csvContent = "Ano,Total Acumulado,Total Investido,Juros Compostos\n";
+
+    chartData.forEach((row) => {
+      const ano = row.ano;
+      const total = row.Total.toString().replace(".", ",");
+      const investido = row.Investido.toString().replace(".", ",");
+      const juros = (row.Total - row.Investido).toString().replace(".", ",");
+      csvContent += `"${ano}","${total}","${investido}","${juros}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `DaviFinance_Previsao_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Erro ao exportar CSV:", error);
+    toast.error("Erro ao exportar CSV. Verifica a consola.");
+  }
+};
+
+export const exportPrevisaoToPDF = (chartData: any[], results: any, customYears: string) => {
+  try {
+    const doc = new jsPDF();
+
+    doc.setFontSize(22);
+    doc.setTextColor(79, 70, 229);
+    doc.text("Davi Finance", 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Previsão Patrimonial gerada a ${formatDate(new Date().toISOString())}`, 14, 28);
+
+    const tableColumn = ["Ano", "Total Acumulado", "Total Investido", "Juros Compostos"];
+    const tableRows: any[] = [];
+
+    chartData.forEach((row) => {
+      tableRows.push([
+        row.ano,
+        formatCurrency(row.Total),
+        formatCurrency(row.Investido),
+        formatCurrency(row.Total - row.Investido)
+      ]);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`Resumo de Metas`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(79, 70, 229);
+    doc.text(`Em 10 Anos: ${formatCurrency(results.year10)}`, 14, finalY + 8);
+    doc.text(`Em 20 Anos: ${formatCurrency(results.year20)}`, 14, finalY + 14);
+    doc.text(`Em 30 Anos: ${formatCurrency(results.year30)}`, 14, finalY + 20);
+    doc.text(`Meta (${customYears} Anos): ${formatCurrency(results.custom)}`, 14, finalY + 26);
+
+    doc.save(`DaviFinance_Previsao_${new Date().toISOString().split('T')[0]}.pdf`);
+
+  } catch (error) {
+    console.error("Erro ao exportar PDF:", error);
+    toast.error("Erro ao exportar PDF. Verifica a consola.");
+  }
+};
