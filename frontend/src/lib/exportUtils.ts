@@ -263,3 +263,124 @@ export const exportPrevisaoToPDF = (chartData: any[], results: any, customYears:
     toast.error("Erro ao exportar PDF. Verifica a consola.");
   }
 };
+
+export const exportSimulacaoToCSV = (incomes: any[], expenses: any[]) => {
+  try {
+    let csvContent = "Tipo,Descrição,Valor\n";
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    incomes.forEach((inc) => {
+      totalIncome += inc.amount;
+      csvContent += `"Receita","${inc.name}","${inc.amount.toString().replace(".", ",")}"\n`;
+    });
+
+    expenses.forEach((exp) => {
+      totalExpense += exp.amount;
+      csvContent += `"Despesa","${exp.name}","${exp.amount.toString().replace(".", ",")}"\n`;
+    });
+
+    const balance = totalIncome - totalExpense;
+    csvContent += `\n"","Total Receitas","${totalIncome.toString().replace(".", ",")}"\n`;
+    csvContent += `"","Total Despesas","${totalExpense.toString().replace(".", ",")}"\n`;
+    csvContent += `"","Saldo Previsto","${balance.toString().replace(".", ",")}"\n`;
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `DaviFinance_Simulacao_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Erro ao exportar CSV:", error);
+    toast.error("Erro ao exportar CSV. Verifica a consola.");
+  }
+};
+
+export const exportSimulacaoToPDF = (incomes: any[], expenses: any[]) => {
+  try {
+    const doc = new jsPDF();
+
+    doc.setFontSize(22);
+    doc.setTextColor(79, 70, 229);
+    doc.text("Davi Finance", 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Simulação Mensal gerada a ${formatDate(new Date().toISOString())}`, 14, 28);
+
+    const tableColumn = ["Tipo", "Descrição", "Valor"];
+    const tableRows: any[] = [];
+    
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    incomes.forEach((inc) => {
+      totalIncome += inc.amount;
+      tableRows.push(["Receita", inc.name, formatCurrency(inc.amount)]);
+    });
+
+    expenses.forEach((exp) => {
+      totalExpense += exp.amount;
+      tableRows.push(["Despesa", exp.name, formatCurrency(exp.amount)]);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      didParseCell: function (data) {
+        if (data.section === 'body' && data.column.index === 0) {
+           if (data.cell.raw === "Receita") {
+              data.cell.styles.textColor = [22, 163, 74];
+              data.cell.styles.fontStyle = 'bold';
+           } else {
+              data.cell.styles.textColor = [220, 38, 38];
+              data.cell.styles.fontStyle = 'bold';
+           }
+        }
+        if (data.section === 'body' && data.column.index === 2) {
+           data.cell.styles.halign = 'right';
+           const rowArr = data.row.raw as any[];
+           if (rowArr[0] === "Receita") {
+              data.cell.styles.textColor = [22, 163, 74];
+           } else {
+              data.cell.styles.textColor = [220, 38, 38];
+           }
+        }
+      }
+    });
+
+    const balance = totalIncome - totalExpense;
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`Resumo da Simulação`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(22, 163, 74);
+    doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 14, finalY + 8);
+
+    doc.setTextColor(220, 38, 38);
+    doc.text(`Total Despesas: ${formatCurrency(totalExpense)}`, 14, finalY + 14);
+
+    const balanceColor = balance >= 0 ? [22, 163, 74] : [220, 38, 38];
+    doc.setTextColor(balanceColor[0], balanceColor[1], balanceColor[2]);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Saldo Previsto: ${formatCurrency(balance)}`, 14, finalY + 22);
+    doc.setFont("helvetica", "normal");
+
+    doc.save(`DaviFinance_Simulacao_${new Date().toISOString().split('T')[0]}.pdf`);
+
+  } catch (error) {
+    console.error("Erro ao exportar PDF:", error);
+    toast.error("Erro ao exportar PDF. Verifica a consola.");
+  }
+};

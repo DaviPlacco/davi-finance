@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Lightbulb, Plus, Trash2, TrendingUp, TrendingDown, Wallet, Calculator } from "lucide-react";
+import { Lightbulb, Plus, Trash2, TrendingUp, TrendingDown, Wallet, Calculator, FileText, Download } from "lucide-react";
+import { exportSimulacaoToCSV, exportSimulacaoToPDF } from "@/lib/exportUtils";
 
 type Transaction = {
   id: string;
@@ -135,6 +136,14 @@ export default function SimulacaoPage() {
           <p className="text-slate-500 dark:text-slate-400 mt-1">
             Planeia e prevê as tuas receitas e despesas para o próximo mês.
           </p>
+        </div>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button onClick={() => exportSimulacaoToCSV(incomes, expenses)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold text-sm shadow-sm">
+            <FileText className="w-4 h-4 text-emerald-500" /> Exportar CSV
+          </button>
+          <button onClick={() => exportSimulacaoToPDF(incomes, expenses)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:text-rose-600 hover:border-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all font-semibold text-sm shadow-sm">
+            <Download className="w-4 h-4 text-rose-500" /> Exportar PDF
+          </button>
         </div>
       </div>
 
