@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Lightbulb, Plus, Trash2, TrendingUp, TrendingDown, Wallet, Calculator } from "lucide-react";
 
 type Transaction = {
@@ -10,14 +10,67 @@ type Transaction = {
 };
 
 export default function SimulacaoPage() {
-  const [incomes, setIncomes] = useState<Transaction[]>([
-    { id: "1", name: "Salário", amount: 2500 }
-  ]);
-  
-  const [expenses, setExpenses] = useState<Transaction[]>([
-    { id: "1", name: "Renda da Casa", amount: 800 },
-    { id: "2", name: "Supermercado", amount: 300 }
-  ]);
+  const [incomes, setIncomes] = useState<Transaction[]>([]);
+  const [expenses, setExpenses] = useState<Transaction[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Pagination states for expenses
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("simulacao_cache");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const now = Date.now();
+        // 10 minutes = 600,000 milliseconds
+        if (now - parsed.timestamp < 600000) {
+          setIncomes(parsed.incomes || []);
+          setExpenses(parsed.expenses || []);
+        } else {
+          setIncomes([{ id: "1", name: "Salário", amount: 2500 }]);
+          setExpenses([
+            { id: "1", name: "Renda da Casa", amount: 800 },
+            { id: "2", name: "Supermercado", amount: 300 }
+          ]);
+        }
+      } catch (e) {
+        setIncomes([{ id: "1", name: "Salário", amount: 2500 }]);
+        setExpenses([
+          { id: "1", name: "Renda da Casa", amount: 800 },
+          { id: "2", name: "Supermercado", amount: 300 }
+        ]);
+      }
+    } else {
+      setIncomes([{ id: "1", name: "Salário", amount: 2500 }]);
+      setExpenses([
+        { id: "1", name: "Renda da Casa", amount: 800 },
+        { id: "2", name: "Supermercado", amount: 300 }
+      ]);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("simulacao_cache", JSON.stringify({
+        timestamp: Date.now(),
+        incomes,
+        expenses
+      }));
+    }
+  }, [incomes, expenses, isLoaded]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  const totalPages = Math.ceil(expenses.length / itemsPerPage) || 1;
+  const currentExpenses = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return expenses.slice(start, start + itemsPerPage);
+  }, [expenses, currentPage, itemsPerPage]);
 
   const [newIncomeName, setNewIncomeName] = useState("");
   const [newIncomeAmount, setNewIncomeAmount] = useState("");
@@ -214,12 +267,12 @@ export default function SimulacaoPage() {
           </div>
 
           <div className="space-y-3 mt-4">
-            {expenses.length === 0 ? (
+            {currentExpenses.length === 0 ? (
               <div className="text-center py-6 text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                Nenhuma despesa adicionada.
+                Nenhuma despesa adicionada nesta página.
               </div>
             ) : (
-              expenses.map(expense => (
+              currentExpenses.map(expense => (
                 <div key={expense.id} className="flex justify-between items-center p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
                   <span className="font-semibold text-slate-700 dark:text-slate-200">{expense.name}</span>
                   <div className="flex items-center gap-4">
@@ -233,6 +286,45 @@ export default function SimulacaoPage() {
                   </div>
                 </div>
               ))
+            )}
+
+            {/* Pagination Controls */}
+            {expenses.length > 0 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Itens por página:</span>
+                  <select 
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className="text-xs font-semibold bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-rose-500 text-slate-700 dark:text-slate-300 transition-colors"
+                  >
+                    <option value={3}>3</option>
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Página <strong className="text-slate-700 dark:text-slate-200">{currentPage}</strong> de {totalPages}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
