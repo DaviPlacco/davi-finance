@@ -29,15 +29,27 @@ export const exportToCSV = async () => {
 
     let csvContent = "Data,Categoria,Descricao,Tipo,Valor\n";
 
+    let totalIncome = 0;
+    let totalExpense = 0;
+
     transactions.forEach((t: any) => {
       const category = categoryMap.get(t.category_id);
       const catName = category ? category.name : "Sem Categoria";
-      const typeStr = t.type === "INCOME" ? "Receita" : "Despesa";
+      const isIncome = t.type && t.type.toUpperCase() === "INCOME";
+      const typeStr = isIncome ? "Receita" : "Despesa";
       const valueStr = t.amount.toString().replace(".", ",");
       
+      if (isIncome) totalIncome += t.amount;
+      else totalExpense += t.amount;
+
       const row = `"${formatDate(t.date)}","${catName}","${t.description || ""}","${typeStr}","${valueStr}"`;
       csvContent += row + "\n";
     });
+
+    const balance = totalIncome - totalExpense;
+    csvContent += `\n"","","","Total Receitas","${totalIncome.toString().replace(".", ",")}"\n`;
+    csvContent += `"","","","Total Despesas","${totalExpense.toString().replace(".", ",")}"\n`;
+    csvContent += `"","","","Saldo Total","${balance.toString().replace(".", ",")}"\n`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -81,13 +93,20 @@ export const exportToPDF = async () => {
     // Colors tracking for specific rows
     const rowColors: any[] = [];
 
+    let totalIncome = 0;
+    let totalExpense = 0;
+
     transactions.forEach((t: any) => {
       const category = categoryMap.get(t.category_id);
       const catName = category ? category.name : "Sem Categoria";
       const catColorHex = category && category.color ? category.color : "#94a3b8"; // default slate-400
       
-      const typeStr = t.type === "INCOME" ? "Receita" : "Despesa";
+      const isIncome = t.type && t.type.toUpperCase() === "INCOME";
+      const typeStr = isIncome ? "Receita" : "Despesa";
       const valStr = formatCurrency(t.amount);
+
+      if (isIncome) totalIncome += t.amount;
+      else totalExpense += t.amount;
 
       const rowData = [
         formatDate(t.date),
@@ -100,7 +119,7 @@ export const exportToPDF = async () => {
       tableRows.push(rowData);
       rowColors.push({
         catColorHex,
-        isIncome: t.type === "INCOME"
+        isIncome
       });
     });
 
@@ -135,6 +154,27 @@ export const exportToPDF = async () => {
         }
       }
     });
+
+    const balance = totalIncome - totalExpense;
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59); // slate-800
+    doc.text(`Resumo do Relatório`, 14, finalY);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(22, 163, 74); // green-600
+    doc.text(`Total Receitas: ${formatCurrency(totalIncome)}`, 14, finalY + 8);
+
+    doc.setTextColor(220, 38, 38); // red-600
+    doc.text(`Total Despesas: ${formatCurrency(totalExpense)}`, 14, finalY + 14);
+
+    const balanceColor = balance >= 0 ? [22, 163, 74] : [220, 38, 38];
+    doc.setTextColor(balanceColor[0], balanceColor[1], balanceColor[2]);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Saldo Total: ${formatCurrency(balance)}`, 14, finalY + 22);
+    doc.setFont("helvetica", "normal");
 
     doc.save(`DaviFinance_Relatorio_${new Date().toISOString().split('T')[0]}.pdf`);
 
