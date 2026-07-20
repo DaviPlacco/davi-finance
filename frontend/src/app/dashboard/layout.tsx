@@ -78,6 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Previsão", href: "/dashboard/previsao", icon: LineChart },
     { name: "Simulação", href: "/dashboard/simulacao", icon: Lightbulb },
     { name: "Orçamentos", href: "/dashboard/orcamentos", icon: PieChart },
+    { name: "Relatórios", href: "/dashboard/relatorios", icon: FileText },
   ];
 
   return (
