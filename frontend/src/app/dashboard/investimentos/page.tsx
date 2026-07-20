@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { TrendingUp, Plus, Target, PiggyBank, Pencil, Trash2 } from "lucide-react";
+import { TrendingUp, Plus, Target, PiggyBank, Pencil, Trash2, X, Minus } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -23,6 +23,11 @@ export default function InvestimentosPage() {
   const [filterYear, setFilterYear] = useState("2026");
   const [filterMonth, setFilterMonth] = useState("Todos");
   const [filterDay, setFilterDay] = useState("Todos");
+
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+  const [adjustInv, setAdjustInv] = useState<any>(null);
+  const [adjustAmount, setAdjustAmount] = useState("");
+  const [adjustType, setAdjustType] = useState<"add" | "remove">("add");
 
   useEffect(() => {
     fetchData();
@@ -259,8 +264,10 @@ export default function InvestimentosPage() {
                           <h3 className="text-xl font-bold text-slate-900 dark:text-white">{inv.name}</h3>
                         </div>
                         <div className="flex gap-2 relative z-20">
-                          <button onClick={() => handleEdit(inv)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(inv.id)} className="p-2 text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => { setAdjustInv(inv); setAdjustType("add"); setAdjustModalOpen(true); }} className="p-2 text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-500 rounded-lg transition-colors" title="Adicionar Valor"><Plus className="w-4 h-4" /></button>
+                          <button onClick={() => { setAdjustInv(inv); setAdjustType("remove"); setAdjustModalOpen(true); }} className="p-2 text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-500 rounded-lg transition-colors" title="Retirar Valor"><Minus className="w-4 h-4" /></button>
+                          <button onClick={() => handleEdit(inv)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-colors" title="Editar Ativo"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(inv.id)} className="p-2 text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 rounded-lg transition-colors" title="Eliminar Ativo"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
                       
@@ -289,6 +296,50 @@ export default function InvestimentosPage() {
         </div>
 
       </div>
+
+      {adjustModalOpen && adjustInv && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl p-6 relative border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+            <button onClick={() => setAdjustModalOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              {adjustType === "add" ? "Adicionar Valor" : "Retirar Valor"}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+              Ajusta o saldo do teu ativo <strong className="text-slate-700 dark:text-slate-200">{adjustInv.name}</strong>.
+            </p>
+            <form onSubmit={handleAdjustBalance} className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Valor (€)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">€</span>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    autoFocus
+                    value={adjustAmount} 
+                    onChange={e => setAdjustAmount(e.target.value)} 
+                    className="w-full pl-10 pr-4 py-3 text-lg font-bold border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-all" 
+                    placeholder="0.00" 
+                  />
+                </div>
+              </div>
+              <button 
+                type="submit" 
+                className={`w-full py-4 text-white font-bold rounded-xl shadow-lg transition-all ${
+                  adjustType === "add" 
+                  ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30" 
+                  : "bg-rose-500 hover:bg-rose-600 shadow-rose-500/30"
+                }`}
+              >
+                {adjustType === "add" ? "Confirmar Adição" : "Confirmar Remoção"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
