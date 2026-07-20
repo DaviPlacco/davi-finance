@@ -259,18 +259,23 @@ def get_investment_history(
         filtered.append(item)
 
     chart_data = []
+    grouped_data = {}
+    
     for item in filtered:
         d = item["date"]
         if day and day != 0:
-            label = d.strftime("%H:%M")
+            label = d.strftime("%H:00")
         elif month and month != 0:
             label = d.strftime("%d/%m")
         else:
-            label = d.strftime("%d %b")
+            label = d.strftime("%d %b %Y")
         
+        grouped_data[label] = round(item["total"], 2)
+        
+    for label, val in grouped_data.items():
         chart_data.append({
             "name": label,
-            "valor": round(item["total"], 2)
+            "valor": val
         })
         
     if not chart_data and investments:
