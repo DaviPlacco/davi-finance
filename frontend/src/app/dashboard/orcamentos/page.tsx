@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { PieChart, TrendingDown, AlertTriangle, CheckCircle2, Trash2, X } from "lucide-react";
+import { PieChart, TrendingDown, AlertTriangle, CheckCircle2, Trash2, X, PiggyBank } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
 
 export default function OrcamentosPage() {
   const [categories, setCategories] = useState([]);
@@ -15,17 +16,21 @@ export default function OrcamentosPage() {
     setTimeout(() => setToastMessage(null), 7000);
   };
 
+  const currentYear = new Date().getFullYear().toString();
+  const currentMonth = (new Date().getMonth() + 1).toString();
+  
+  const [filterYear, setFilterYear] = useState(currentYear);
+  const [filterMonth, setFilterMonth] = useState(currentMonth);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [filterYear, filterMonth]);
 
   async function fetchData() {
     try {
-      const now = new Date();
-      // Fetch only expenses for current month and year
       const query = new URLSearchParams();
-      query.append("year", now.getFullYear().toString());
-      query.append("month", (now.getMonth() + 1).toString());
+      query.append("year", filterYear);
+      query.append("month", filterMonth);
       query.append("type", "expense");
 
       const [transRes, catRes] = await Promise.all([
@@ -69,21 +74,57 @@ export default function OrcamentosPage() {
 
   // Calculate spent amount per category
   const categorySpending: Record<string, number> = {};
+  let totalSpent = 0;
   transactions.forEach((t: any) => {
     if (!categorySpending[t.category_id]) categorySpending[t.category_id] = 0;
     categorySpending[t.category_id] += t.amount;
+    
+    // Contar gasto total apenas para categorias orçamentadas
+    if (budgetCategories.find((c: any) => c.id === t.category_id)) {
+      totalSpent += t.amount;
+    }
   });
+
+  const totalBudget = budgetCategories.reduce((acc: number, cat: any) => acc + cat.budget_limit, 0);
+  const budgetDiff = totalBudget - totalSpent;
+  const overBudget = budgetDiff < 0;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-          <PieChart className="w-8 h-8 text-primary" /> Previsões e Orçamentos
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Acompanha os teus gastos deste mês e não deixes que ultrapassem o teu limite estipulado.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+            <PieChart className="w-8 h-8 text-primary" /> Previsões e Orçamentos
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Acompanha o histórico dos teus gastos e não deixes que ultrapassem o teu limite estipulado.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <CustomSelect value={filterYear} onChange={setFilterYear as any} options={[{value:"2025",label:"2025"},{value:"2026",label:"2026"}]} />
+          <CustomSelect value={filterMonth} onChange={setFilterMonth as any} options={[{value:"1",label:"Jan"},{value:"2",label:"Fev"},{value:"3",label:"Mar"},{value:"4",label:"Abr"},{value:"5",label:"Mai"},{value:"6",label:"Jun"},{value:"7",label:"Jul"},{value:"8",label:"Ago"},{value:"9",label:"Set"},{value:"10",label:"Out"},{value:"11",label:"Nov"},{value:"12",label:"Dez"}]} />
+        </div>
       </div>
+
+      {totalBudget > 0 && (
+        <div className={`glass-card p-6 flex items-center gap-6 ${overBudget ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-900/30'}`}>
+          <div className={`p-4 rounded-xl shrink-0 ${overBudget ? 'bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`}>
+            {overBudget ? <AlertTriangle className="w-8 h-8" /> : <PiggyBank className="w-8 h-8" />}
+          </div>
+          <div>
+            <h3 className={`text-xl font-bold ${overBudget ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+              {overBudget ? 'Orçamento Ultrapassado' : 'Orçamento Controlado'}
+            </h3>
+            <p className={`mt-1 font-medium text-lg ${overBudget ? 'text-rose-600 dark:text-rose-500' : 'text-emerald-600 dark:text-emerald-500'}`}>
+              {overBudget ? (
+                <>Passaste o teu limite total em <strong className="text-2xl font-black ml-1">{formatCurrency(Math.abs(budgetDiff))}</strong></>
+              ) : (
+                <>Poupaste <strong className="text-2xl font-black ml-1">{formatCurrency(budgetDiff)}</strong> em relação ao teu limite</>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       {budgetCategories.length === 0 ? (
         <div className="glass-card p-10 text-center flex flex-col items-center justify-center">
