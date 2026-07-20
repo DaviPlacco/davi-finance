@@ -55,6 +55,31 @@ export default function InvestimentosPage() {
 
   const STANDARD_ASSET_TYPES = ["Ações", "Criptomoedas", "Imobiliário", "Obrigações", "Numerário"];
 
+  const handleAdjustBalance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adjustInv) return;
+    const amount = parseFloat(adjustAmount.replace(",", "."));
+    if (isNaN(amount) || amount <= 0) return;
+
+    const newBalance = adjustType === "add" ? parseFloat(adjustInv.balance) + amount : parseFloat(adjustInv.balance) - amount;
+
+    try {
+      await api.put(`/investments/${adjustInv.id}`, {
+        name: adjustInv.name,
+        asset_type: adjustInv.asset_type,
+        balance: newBalance,
+        target: adjustInv.target
+      });
+      toast.success("Saldo atualizado com sucesso!");
+      setAdjustModalOpen(false);
+      setAdjustAmount("");
+      fetchData();
+    } catch(err) {
+      console.error(err);
+      toast.error("Erro ao atualizar o saldo.");
+    }
+  };
+
   const handleEdit = (inv: any) => {
     setEditingId(inv.id);
     setName(inv.name);
