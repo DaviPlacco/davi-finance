@@ -157,6 +157,15 @@ def create_investment(investment: schemas.InvestmentCreate, db: Session = Depend
     db.add(db_investment)
     db.commit()
     db.refresh(db_investment)
+    
+    log = models.InvestmentLog(
+        investment_id=db_investment.id,
+        amount=db_investment.balance,
+        type=models.InvestmentLogType.CONTRIBUTION
+    )
+    db.add(log)
+    db.commit()
+    
     return db_investment
 
 @app.get("/investments", response_model=list[schemas.InvestmentResponse])
@@ -168,8 +177,21 @@ def update_investment(investment_id: int, investment: schemas.InvestmentCreate, 
     db_investment = db.query(models.Investment).filter(models.Investment.id == investment_id, models.Investment.user_id == current_user.id).first()
     if not db_investment:
         raise HTTPException(status_code=404, detail="Investment not found")
+        
+    old_balance = db_investment.balance
+    
     for key, value in investment.model_dump().items():
         setattr(db_investment, key, value)
+        
+    if old_balance != db_investment.balance:
+        diff = db_investment.balance - old_balance
+        log = models.InvestmentLog(
+            investment_id=db_investment.id,
+            amount=diff,
+            type=models.InvestmentLogType.CONTRIBUTION if diff > 0 else models.InvestmentLogType.YIELD
+        )
+        db.add(log)
+        
     db.commit()
     db.refresh(db_investment)
     return db_investment
@@ -192,40 +214,68 @@ def get_investment_history(
     current_user: models.User = Depends(auth.get_current_user)
 ):
     investments = db.query(models.Investment).filter(models.Investment.user_id == current_user.id).all()
-    total_patrimony = sum(i.balance for i in investments)
     
+    # Backfill para utilizadores antigos que não tenham logs
+    for inv in investments:
+        if not inv.logs:
+            initial_log = models.InvestmentLog(
+                investment_id=inv.id,
+                amount=inv.balance,
+                type=models.InvestmentLogType.CONTRIBUTION,
+                date=datetime.utcnow()
+            )
+            db.add(initial_log)
+    db.commit()
+
+    logs = db.query(models.InvestmentLog).join(models.Investment).filter(models.Investment.user_id == current_user.id).order_by(models.InvestmentLog.date.asc()).all()
+
+    timeline = []
+    current_total = 0.0
+    
+    # O primeiro ponto do gráfico começa no dia anterior ao primeiro log com saldo 0
+    if logs:
+        first_date = logs[0].date
+        timeline.append({
+            "date": datetime(first_date.year, first_date.month, first_date.day),
+            "total": 0.0
+        })
+        
+    for log in logs:
+        current_total += log.amount
+        timeline.append({
+            "date": log.date,
+            "total": current_total
+        })
+
+    filtered = []
+    for item in timeline:
+        d = item["date"]
+        if year and year != 0 and d.year != year:
+            continue
+        if month and month != 0 and d.month != month:
+            continue
+        if day and day != 0 and d.day != day:
+            continue
+        filtered.append(item)
+
     chart_data = []
-    if day:
-        # Hourly data for the day
-        for i in range(8, 20, 2):
-            chart_data.append({"name": f"{i}:00", "valor": total_patrimony * (0.95 + random.uniform(0, 0.1))})
-    elif month:
-        # Daily data for the month
-        chart_data = [
-            {"name": '01', "valor": total_patrimony * 0.90},
-            {"name": '05', "valor": total_patrimony * 0.92},
-            {"name": '10', "valor": total_patrimony * 0.95},
-            {"name": '15', "valor": total_patrimony * 0.94},
-            {"name": '20', "valor": total_patrimony * 0.98},
-            {"name": '25', "valor": total_patrimony * 0.99},
-            {"name": '30', "valor": total_patrimony * 1.00},
-        ]
-    else:
-        # Monthly data
-        chart_data = [
-            {"name": 'Jan', "valor": total_patrimony * 0.70},
-            {"name": 'Fev', "valor": total_patrimony * 0.75},
-            {"name": 'Mar', "valor": total_patrimony * 0.73},
-            {"name": 'Abr', "valor": total_patrimony * 0.80},
-            {"name": 'Mai', "valor": total_patrimony * 0.82},
-            {"name": 'Jun', "valor": total_patrimony * 0.85},
-            {"name": 'Jul', "valor": total_patrimony * 0.84},
-            {"name": 'Ago', "valor": total_patrimony * 0.90},
-            {"name": 'Set', "valor": total_patrimony * 0.92},
-            {"name": 'Out', "valor": total_patrimony * 0.95},
-            {"name": 'Nov', "valor": total_patrimony * 0.98},
-            {"name": 'Dez', "valor": total_patrimony * 1.00},
-        ]
+    for item in filtered:
+        d = item["date"]
+        if day and day != 0:
+            label = d.strftime("%H:%M")
+        elif month and month != 0:
+            label = d.strftime("%d/%m")
+        else:
+            label = d.strftime("%d %b")
+        
+        chart_data.append({
+            "name": label,
+            "valor": round(item["total"], 2)
+        })
+        
+    if not chart_data and investments:
+        total_patrimony = sum(i.balance for i in investments)
+        chart_data = [{"name": "Atual", "valor": round(total_patrimony, 2)}]
 
     return chart_data
 
