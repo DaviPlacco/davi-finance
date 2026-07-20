@@ -234,7 +234,7 @@ def get_investment_history(
     
     # O primeiro ponto do gráfico começa no dia anterior ao primeiro log com saldo 0
     if logs:
-        first_date = logs[0].date
+        first_date = logs[0].date - timedelta(days=1)
         timeline.append({
             "date": datetime(first_date.year, first_date.month, first_date.day),
             "total": 0.0
