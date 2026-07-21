@@ -91,7 +91,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}, Davi Placco</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}, PL Finance</h1>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 capitalize">{currentDate}</p>
         </div>
         <div className="flex gap-4">
@@ -349,7 +349,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="text-center mb-8 w-full">
-                <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500 mb-2">{greeting}, Davi!</h2>
+                <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500 mb-2">{greeting}, PL Finance!</h2>
                 <p className="text-slate-500 dark:text-slate-400">Aqui tens o resumo de como está a tua saúde financeira neste mês.</p>
               </div>
               

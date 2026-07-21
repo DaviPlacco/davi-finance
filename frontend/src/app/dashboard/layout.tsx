@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { itemsPerPage, setItemsPerPage } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [username, setUsername] = useState("Davi Finance");
+  const [username, setUsername] = useState("PL Finance");
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {

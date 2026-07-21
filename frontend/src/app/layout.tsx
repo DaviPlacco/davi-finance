@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Davi Finance",
+  title: "PL Finance",
   description: "A tua plataforma de gestão financeira inteligente e premium.",
 };
 
