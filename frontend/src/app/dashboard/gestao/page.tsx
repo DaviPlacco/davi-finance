@@ -489,7 +489,13 @@ export default function GestaoPage() {
               const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
               
               return (
-                <div key={cat.id} className="glass-card p-5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                <div key={cat.id} className="glass-card p-5 relative overflow-hidden group hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] hover:border-primary/50 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-700/0 to-indigo-900/0 group-hover:from-violet-700/10 group-hover:to-indigo-900/10 transition-colors duration-500 rounded-xl pointer-events-none" />
+                  <div 
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-24 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
