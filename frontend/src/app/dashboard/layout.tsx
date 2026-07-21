@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart, Download, FileText, LineChart, Lightbulb } from "lucide-react";
+import { LayoutDashboard, Wallet, TrendingUp, LogOut, Settings, X, Moon, Sun, Monitor, PieChart, Download, FileText, LineChart, Lightbulb, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSettings } from "@/lib/SettingsContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -165,9 +165,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-8 z-10 overflow-y-auto relative">
+      <main className="flex-1 p-4 md:p-8 z-10 overflow-y-auto flex flex-col">
         {/* Profile Image Top Right */}
-        <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20 flex items-center gap-3">
+        <div className="flex justify-end items-center gap-3 mb-6 md:mb-8">
           <div className="hidden md:flex flex-col items-end">
             <span className="text-sm font-bold text-slate-900 dark:text-white leading-none">{username}</span>
             <span className="text-xs text-slate-500 dark:text-slate-400">Online</span>
@@ -180,7 +180,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
         </div>
-        {children}
+        
+        <div className="flex-1">
+          {children}
+        </div>
       </main>
 
       {/* Settings Modal */}
