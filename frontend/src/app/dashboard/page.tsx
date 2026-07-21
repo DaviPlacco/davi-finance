@@ -14,6 +14,8 @@ export default function DashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [greeting, setGreeting] = useState("Olá");
   const [currentDate, setCurrentDate] = useState("");
+  const [username, setUsername] = useState("Utilizador");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   // Filters
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
@@ -56,6 +58,15 @@ export default function DashboardPage() {
       setShowWelcome(true);
       sessionStorage.removeItem("showWelcome");
     }
+
+    const storedName = localStorage.getItem("username");
+    if (storedName) {
+      setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
+    }
+    const storedImage = localStorage.getItem("profileImage");
+    if (storedImage) {
+      setProfileImage(storedImage);
+    }
   }, []);
 
   const expensesByCategory = useMemo(() => {
@@ -94,7 +105,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}, PL Finance</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}, {username}</h1>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 capitalize">{currentDate}</p>
         </div>
         <div className="flex gap-4">
@@ -345,15 +356,22 @@ export default function DashboardPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
               
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6 relative">
-                <div className="absolute inset-0 bg-white dark:bg-slate-900 rounded-full m-[2px] flex items-center justify-center">
-                  <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-tr from-violet-500 to-indigo-500">DP</span>
+              <div className="flex flex-col items-center">
+                <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 shadow-xl border-4 border-white dark:border-slate-800 flex items-center justify-center relative z-10 mb-6 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/20 to-indigo-500/20 animate-pulse" />
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-tr from-violet-500 to-indigo-500">
+                      {username.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-              </div>
 
-              <div className="text-center mb-8 w-full">
-                <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500 mb-2">{greeting}, PL Finance!</h2>
-                <p className="text-slate-500 dark:text-slate-400">Aqui tens o resumo de como está a tua saúde financeira neste mês.</p>
+                <div className="text-center mb-8 w-full">
+                  <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500 mb-2">{greeting}, {username}!</h2>
+                  <p className="text-slate-500 dark:text-slate-400">Aqui tens o resumo de como está a tua saúde financeira neste mês.</p>
+                </div>
               </div>
               
               <div className="space-y-4 w-full">

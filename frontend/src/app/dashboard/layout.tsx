@@ -19,6 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [username, setUsername] = useState("PL Finance");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -32,6 +33,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (storedName) {
         // capitalize first letter
         setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
+      }
+      const storedImage = localStorage.getItem("profileImage");
+      if (storedImage) {
+        setProfileImage(storedImage);
       }
 
       // Auto-logout after 15 minutes of inactivity
@@ -92,9 +97,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className={`w-full ${isCollapsed ? 'md:w-20' : 'md:w-64'} bg-white dark:bg-slate-900 md:h-screen md:rounded-none md:border-r border-b md:border-b-0 border-slate-200/50 dark:border-slate-800/50 flex flex-col z-10 transition-all duration-300 relative`}>
         <div className={`p-6 flex items-center justify-between md:block ${isCollapsed ? 'md:px-0 md:text-center' : ''}`}>
           {!isCollapsed ? (
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300">{username}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300">PL Finance</h2>
           ) : (
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300 hidden md:block">DF</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300 hidden md:block">PL</h2>
           )}
           <div className="flex items-center gap-4 md:hidden">
             <button onClick={() => setIsSettingsOpen(true)} className="text-slate-500 hover:text-primary transition-colors">
@@ -160,7 +165,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-8 z-10 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 z-10 overflow-y-auto relative">
+        {/* Profile Image Top Right */}
+        <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20 flex items-center gap-3">
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-sm font-bold text-slate-900 dark:text-white leading-none">{username}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Online</span>
+          </div>
+          {profileImage ? (
+            <img src={profileImage} alt="Profile" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-primary shadow-lg" />
+          ) : (
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-lg">
+              {username.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
         {children}
       </main>
 
@@ -212,6 +231,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   ))}
                 </div>
               </div>
+              {/* Profile Image Setting */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Imagem de Perfil</label>
+                <div className="flex items-center gap-4">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Preview" className="w-16 h-16 rounded-full object-cover border-2 border-primary" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-700">
+                      <User className="w-8 h-8" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <label className="cursor-pointer flex items-center justify-center gap-2 w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-colors border border-slate-200 dark:border-slate-700">
+                      <span>Carregar Imagem</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64String = reader.result as string;
+                              setProfileImage(base64String);
+                              localStorage.setItem("profileImage", base64String);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                      />
+                    </label>
+                    {profileImage && (
+                      <button 
+                        onClick={() => {
+                          setProfileImage(null);
+                          localStorage.removeItem("profileImage");
+                        }}
+                        className="text-xs text-rose-500 hover:text-rose-600 font-medium mt-2 w-full text-center"
+                      >
+                        Remover imagem
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Export Data Settings */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Exportar Dados</label>
