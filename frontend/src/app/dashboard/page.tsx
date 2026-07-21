@@ -95,8 +95,9 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default">
+        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default shadow-[0_0_30px_rgba(139,92,246,0.15)] dark:shadow-[0_0_50px_rgba(139,92,246,0.15)]">
           <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 group-hover:opacity-0 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-fuchsia-500/40 blur-[50px] pointer-events-none rounded-full" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-violet-100 group-hover:text-slate-500 dark:group-hover:text-slate-400 uppercase tracking-wider transition-colors duration-500">Saldo Atual</h3>
@@ -166,9 +167,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="glass-card p-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Evolução Patrimonial</h3>
-          <div className="h-[240px] w-full">
+        <div className="glass-card p-6 relative overflow-hidden shadow-[0_0_30px_rgba(139,92,246,0.05)] dark:shadow-[0_0_40px_rgba(139,92,246,0.05)]">
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-indigo-600/30 blur-[60px] pointer-events-none rounded-full" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 relative z-10">Evolução Patrimonial</h3>
+          <div className="h-[240px] w-full relative z-10">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={summary.chartData || []} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />

@@ -84,7 +84,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row relative overflow-hidden transition-colors duration-300">
       {/* Background aesthetics */}
-      <div className="absolute top-[-10%] right-[-5%] w-[30%] h-[30%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-600/15 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/15 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[40%] left-[30%] w-[20%] h-[20%] rounded-full bg-fuchsia-600/10 blur-[100px] pointer-events-none" />
 
       {/* Sidebar Navigation */}
       <nav className={`w-full ${isCollapsed ? 'md:w-20' : 'md:w-64'} bg-white dark:bg-slate-900 md:h-screen md:rounded-none md:border-r border-b md:border-b-0 border-slate-200/50 dark:border-slate-800/50 flex flex-col z-10 transition-all duration-300 relative`}>
@@ -114,12 +116,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 py-3 rounded-xl font-medium transition-all ${
-                  isCollapsed ? 'justify-center px-0' : 'px-4'
-                } ${
+                className={`flex items-center gap-3 transition-all ${
+                  isCollapsed ? 'justify-center w-12 h-12 mx-auto rounded-2xl' : 'py-3 px-4 rounded-xl'
+                } font-medium ${
                   isActive 
-                  ? "bg-primary text-white shadow-md shadow-primary/20" 
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                  ? "bg-primary text-white shadow-[0_0_20px_rgba(139,92,246,0.5)] border border-white/10 dark:border-white/5" 
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent"
                 }`}
                 title={isCollapsed ? item.name : undefined}
               >
