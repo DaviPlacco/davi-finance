@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { api } from "@/lib/api";
 import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, Wallet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
@@ -39,6 +39,25 @@ export default function DashboardPage() {
     };
     fetchData();
   }, [filterYear, filterMonth]);
+
+  const expensesByCategory = useMemo(() => {
+    const expenses = transactions.filter((t: any) => t.type === 'expense');
+    
+    const grouped = expenses.reduce((acc: any, t: any) => {
+      acc[t.category_id] = (acc[t.category_id] || 0) + t.amount;
+      return acc;
+    }, {});
+
+    return Object.keys(grouped).map(catId => {
+      const category = categories.find((c: any) => c.id === parseInt(catId));
+      return {
+        id: catId,
+        name: category ? category.name : "Sem Categoria",
+        color: category ? category.color : "#94a3b8",
+        amount: grouped[catId]
+      };
+    }).sort((a, b) => b.amount - a.amount);
+  }, [transactions, categories]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
@@ -231,6 +250,59 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Expenses Summary */}
+      {expensesByCategory.length > 0 && (
+        <div className="mt-8 space-y-4 animate-in slide-in-from-bottom-5 fade-in duration-500 delay-150">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-rose-500" /> Top Categorias de Gastos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {expensesByCategory.map((cat, idx) => {
+              const maxAmount = expensesByCategory[0].amount;
+              const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
+              
+              return (
+                <div key={cat.id} className="glass-card p-5 relative overflow-hidden group hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] hover:border-primary/50 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-700/0 to-indigo-900/0 group-hover:from-violet-700/10 group-hover:to-indigo-900/10 transition-colors duration-500 rounded-xl pointer-events-none" />
+                  <div 
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-24 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={cat.name}>
+                        {cat.name}
+                      </span>
+                    </div>
+                    <span className="font-bold text-rose-600 dark:text-rose-500">
+                      -{formatCurrency(cat.amount)}
+                    </span>
+                  </div>
+                  
+                  {/* Progress bar background */}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-2 rounded-full overflow-hidden relative z-10">
+                    <div 
+                      className="h-full rounded-full transition-all duration-1000 ease-out"
+                      style={{ 
+                        width: `${percent}%`, 
+                        backgroundColor: cat.color 
+                      }} 
+                    />
+                  </div>
+                  
+                  {/* Ranking Number */}
+                  <div className="absolute -right-3 -bottom-5 text-7xl font-black text-slate-900/5 dark:text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                    #{idx + 1}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
