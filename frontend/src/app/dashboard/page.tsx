@@ -195,7 +195,7 @@ export default function DashboardPage() {
             <div className="animate-marquee flex gap-4 mt-4">
               {/* Duplicate the array twice to ensure a smooth infinite loop */}
               {[...transactions, ...transactions, ...transactions].map((t: any, i: number) => (
-                <div key={i} className="relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:border-primary/50 hover:-translate-y-4 hover:-rotate-[10deg] hover:shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:z-20">
+                <div key={i} className="relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:border-primary/50 hover:-translate-y-6 hover:-rotate-[10deg] origin-bottom-left hover:shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:z-20">
                   <div className="absolute inset-0 bg-gradient-to-br from-violet-700/0 to-indigo-900/0 group-hover:from-violet-700/10 group-hover:to-indigo-900/10 transition-colors duration-500 rounded-xl pointer-events-none" />
                   <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-20 bg-indigo-600/0 group-hover:bg-indigo-600/40 blur-[40px] pointer-events-none rounded-full transition-colors duration-500" />
                   
