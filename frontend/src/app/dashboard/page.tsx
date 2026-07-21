@@ -189,7 +189,7 @@ export default function DashboardPage() {
         <div className="mt-4 relative">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Últimos Movimentos</h3>
           <div 
-            className="relative w-full overflow-hidden flex pt-24 pb-8 -mt-20"
+            className="relative w-full overflow-hidden flex pt-24 pb-20 -mt-20 -mb-12"
             style={{ maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)' }}
           >
             <div className="animate-marquee flex gap-4 mt-20">
