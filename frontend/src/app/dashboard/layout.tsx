@@ -95,11 +95,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar Navigation */}
       <nav className={`w-full ${isCollapsed ? 'md:w-20' : 'md:w-64'} bg-white dark:bg-slate-900 md:h-screen md:rounded-none md:border-r border-b md:border-b-0 border-slate-200/50 dark:border-slate-800/50 flex flex-col z-10 transition-all duration-300 relative`}>
-        <div className={`p-6 flex items-center justify-between md:block ${isCollapsed ? 'md:px-0 md:text-center' : ''}`}>
+        <div className={`p-6 flex items-center justify-between md:block ${isCollapsed ? 'md:px-0 md:text-center md:flex md:flex-col md:items-center' : ''}`}>
           {!isCollapsed ? (
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300">PL Finance</h2>
+            <div className="flex items-center gap-3">
+              {profileImage ? (
+                <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-sm">
+                  {username.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-900 dark:text-white leading-tight truncate">{username}</span>
+                <span className="text-xs text-emerald-500 font-medium">Online</span>
+              </div>
+            </div>
           ) : (
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white truncate transition-all duration-300 hidden md:block">PL</h2>
+            <div className="flex flex-col items-center gap-2">
+              {profileImage ? (
+                <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-sm">
+                  {username.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
           )}
           <div className="flex items-center gap-4 md:hidden">
             <button onClick={() => setIsSettingsOpen(true)} className="text-slate-500 hover:text-primary transition-colors">
@@ -166,21 +187,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="flex-1 p-4 md:p-8 z-10 overflow-y-auto flex flex-col">
-        {/* Profile Image Top Right */}
-        <div className="flex justify-end items-center gap-3 mb-6 md:mb-8">
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-sm font-bold text-slate-900 dark:text-white leading-none">{username}</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">Online</span>
-          </div>
-          {profileImage ? (
-            <img src={profileImage} alt="Profile" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-primary shadow-lg" />
-          ) : (
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-lg">
-              {username.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
-        
         <div className="flex-1">
           {children}
         </div>
