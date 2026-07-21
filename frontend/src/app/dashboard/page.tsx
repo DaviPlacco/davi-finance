@@ -192,7 +192,7 @@ export default function DashboardPage() {
             className="relative w-full overflow-hidden flex pt-24 pb-20 -mt-20 -mb-12"
             style={{ maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)' }}
           >
-            <div className="animate-marquee flex gap-4 mt-20">
+            <div className="animate-marquee flex gap-4 mt-4">
               {/* Duplicate the array twice to ensure a smooth infinite loop */}
               {[...transactions, ...transactions, ...transactions].map((t: any, i: number) => (
                 <div key={i} className="relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:border-primary/50 hover:-translate-y-4 hover:-rotate-[10deg] hover:shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:z-20">
