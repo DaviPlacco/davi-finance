@@ -48,13 +48,12 @@ export default function DashboardPage() {
     else setGreeting("Boa noite");
     
     setCurrentDate(new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-
-    const hasSeenWelcome = sessionStorage.getItem("hasSeenWelcome");
-    if (!hasSeenWelcome) {
-      setShowWelcome(true);
-      sessionStorage.setItem("hasSeenWelcome", "true");
-    }
   }, [filterYear, filterMonth]);
+
+  useEffect(() => {
+    // Mostrar o pop-up sempre que o utilizador entrar na página (ex: depois do log-in)
+    setShowWelcome(true);
+  }, []);
 
   const expensesByCategory = useMemo(() => {
     const expenses = transactions.filter((t: any) => t.type === 'expense');
