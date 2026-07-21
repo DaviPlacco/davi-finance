@@ -109,7 +109,7 @@ export default function GestaoPage() {
     try {
       await api.delete(`/transactions/${id}`);
       fetchData();
-      toast.success("Transação eliminada.");
+      toast.error("Transação eliminada.");
     } catch (err) {
       console.error("Failed to delete transaction");
       toast.error("Erro ao eliminar transação.");
@@ -123,7 +123,7 @@ export default function GestaoPage() {
         fetchData();
         if (categoryId === id.toString()) setCategoryId("");
         if (filterCategoryId === id.toString()) setFilterCategoryId("");
-        toast.success("Categoria eliminada com sucesso.");
+        toast.error("Categoria eliminada com sucesso.");
       } catch (err) {
         console.error("Failed to delete category");
         toast.error("Erro ao eliminar a categoria.");
@@ -156,7 +156,7 @@ export default function GestaoPage() {
         });
         setBudgetAmount("");
         fetchData();
-        toast.success("Previsão de gastos atualizada com sucesso!");
+        toast("Previsão de gastos atualizada com sucesso!", { style: { background: '#ffffff', color: '#000000', border: '1px solid #e2e8f0' } });
       }
     } catch (err) {
       console.error("Failed to set budget");

@@ -63,10 +63,11 @@ export default function DashboardPage() {
     if (storedName) {
       setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
     }
-    const storedImage = localStorage.getItem("profileImage");
-    if (storedImage) {
-      setProfileImage(storedImage);
-    }
+    api.get("/users/me").then(res => {
+      if (res.data.profile_image) {
+        setProfileImage(res.data.profile_image);
+      }
+    }).catch(err => console.error("Erro ao carregar perfil", err));
   }, []);
 
   const expensesByCategory = useMemo(() => {

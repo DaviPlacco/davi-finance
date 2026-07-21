@@ -70,7 +70,7 @@ export default function InvestimentosPage() {
         balance: newBalance,
         target: adjustInv.target
       });
-      toast.success("Saldo atualizado com sucesso!");
+      toast("Saldo atualizado com sucesso!", { style: { background: '#ffffff', color: '#000000', border: '1px solid #e2e8f0' } });
       setAdjustModalOpen(false);
       setAdjustAmount("");
       fetchData();
@@ -101,7 +101,7 @@ export default function InvestimentosPage() {
     if(window.confirm("Tem certeza que deseja apagar este investimento?")) {
       try {
         await api.delete(`/investments/${id}`);
-        toast.success("Investimento apagado com sucesso.");
+        toast.error("Investimento apagado com sucesso.");
         fetchData();
       } catch (err) {
         toast.error("Erro ao apagar investimento");
@@ -144,7 +144,11 @@ export default function InvestimentosPage() {
       setCustomAssetType("");
       setBalance("");
       setTarget("");
-      toast.success(editingId ? "Ativo atualizado com sucesso!" : "Ativo adicionado com sucesso!");
+      if (editingId) {
+        toast("Ativo atualizado com sucesso!", { style: { background: '#ffffff', color: '#000000', border: '1px solid #e2e8f0' } });
+      } else {
+        toast.success("Ativo adicionado com sucesso!");
+      }
       fetchData();
     } catch (err) {
       console.error("Failed to save investment");

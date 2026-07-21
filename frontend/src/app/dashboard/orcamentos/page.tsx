@@ -4,17 +4,13 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { PieChart, TrendingDown, AlertTriangle, CheckCircle2, Trash2, X, PiggyBank } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
+import { toast } from "sonner";
 
 export default function OrcamentosPage() {
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [toastMessage, setToastMessage] = useState<{title: string, type: 'success' | 'error'} | null>(null);
 
-  const showToast = (title: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ title, type });
-    setTimeout(() => setToastMessage(null), 7000);
-  };
 
   const currentYear = new Date().getFullYear().toString();
   const currentMonth = (new Date().getMonth() + 1).toString();
@@ -59,11 +55,11 @@ export default function OrcamentosPage() {
         type: category.type,
         budget_limit: null
       });
-      showToast("Previsão eliminada com sucesso!", "success");
+      toast.error("Previsão eliminada com sucesso!");
       fetchData();
     } catch (err) {
       console.error(err);
-      showToast("Erro ao eliminar a previsão.", "error");
+      toast.error("Erro ao eliminar a previsão.");
     }
   };
 
@@ -207,15 +203,7 @@ export default function OrcamentosPage() {
           })}
         </div>
       )}
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className={`fixed bottom-6 right-6 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 z-50 ${toastMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20' : 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20'}`}>
-          <div className="font-semibold text-sm">{toastMessage.title}</div>
-          <button onClick={() => setToastMessage(null)} className="ml-2 hover:opacity-70 transition-opacity">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }

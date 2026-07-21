@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { useSettings } from "@/lib/SettingsContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
+import { api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,10 +35,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // capitalize first letter
         setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
       }
-      const storedImage = localStorage.getItem("profileImage");
-      if (storedImage) {
-        setProfileImage(storedImage);
-      }
+      api.get("/users/me").then(res => {
+        if (res.data.profile_image) {
+          setProfileImage(res.data.profile_image);
+        }
+      }).catch(err => {
+        console.error("Erro ao buscar dados do utilizador", err);
+      });
 
       // Auto-logout after 15 minutes of inactivity
       let timeoutId: NodeJS.Timeout;
@@ -262,10 +266,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           const file = e.target.files?.[0];
                           if (file) {
                             const reader = new FileReader();
-                            reader.onloadend = () => {
+                            reader.onloadend = async () => {
                               const base64String = reader.result as string;
-                              setProfileImage(base64String);
-                              localStorage.setItem("profileImage", base64String);
+                              try {
+                                await api.put("/users/me/profile-image", { profile_image: base64String });
+                                setProfileImage(base64String);
+                              } catch(err) {
+                                console.error("Erro ao salvar imagem", err);
+                              }
                             };
                             reader.readAsDataURL(file);
                           }
@@ -274,9 +282,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </label>
                     {profileImage && (
                       <button 
-                        onClick={() => {
-                          setProfileImage(null);
-                          localStorage.removeItem("profileImage");
+                        onClick={async () => {
+                          try {
+                            await api.put("/users/me/profile-image", { profile_image: "" });
+                            setProfileImage(null);
+                          } catch(err) {
+                            console.error("Erro ao remover imagem", err);
+                          }
                         }}
                         className="text-xs text-rose-500 hover:text-rose-600 font-medium mt-2 w-full text-center"
                       >

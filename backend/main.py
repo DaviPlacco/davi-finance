@@ -46,6 +46,17 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
+@app.put("/users/me/profile-image", response_model=schemas.UserResponse)
+def update_profile_image(
+    update_data: schemas.UserUpdateProfileImage,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_user.profile_image = update_data.profile_image
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
 @app.post("/register", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()

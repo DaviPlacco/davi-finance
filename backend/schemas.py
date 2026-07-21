@@ -6,9 +6,13 @@ from models import CategoryType, TransactionType, InvestmentLogType
 # User Schemas
 class UserBase(BaseModel):
     username: str
+    profile_image: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
+
+class UserUpdateProfileImage(BaseModel):
+    profile_image: str
 
 class UserResponse(UserBase):
     id: int
