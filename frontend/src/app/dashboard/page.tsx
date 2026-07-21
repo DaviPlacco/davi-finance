@@ -51,8 +51,11 @@ export default function DashboardPage() {
   }, [filterYear, filterMonth]);
 
   useEffect(() => {
-    // Mostrar o pop-up sempre que o utilizador entrar na página (ex: depois do log-in)
-    setShowWelcome(true);
+    // Mostrar o pop-up apenas após o login
+    if (sessionStorage.getItem("showWelcome") === "true") {
+      setShowWelcome(true);
+      sessionStorage.removeItem("showWelcome");
+    }
   }, []);
 
   const expensesByCategory = useMemo(() => {
