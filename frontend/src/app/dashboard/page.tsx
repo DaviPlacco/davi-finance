@@ -11,6 +11,9 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [greeting, setGreeting] = useState("Olá");
+  const [currentDate, setCurrentDate] = useState("");
 
   // Filters
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
@@ -38,6 +41,19 @@ export default function DashboardPage() {
       }
     };
     fetchData();
+
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) setGreeting("Bom dia");
+    else if (hour >= 12 && hour < 19) setGreeting("Boa tarde");
+    else setGreeting("Boa noite");
+    
+    setCurrentDate(new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+
+    const hasSeenWelcome = sessionStorage.getItem("hasSeenWelcome");
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
+      sessionStorage.setItem("hasSeenWelcome", "true");
+    }
   }, [filterYear, filterMonth]);
 
   const expensesByCategory = useMemo(() => {
@@ -76,8 +92,8 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Visão Geral</h1>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">Resumo da tua saúde financeira.</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{greeting}, Davi Placco</h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 capitalize">{currentDate}</p>
         </div>
         <div className="flex gap-4">
           <div className="w-32">
@@ -303,6 +319,67 @@ export default function DashboardPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Premium Modal */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-700">
+          <div className="relative w-full max-w-md rounded-[20px] overflow-hidden p-[2px] shadow-[0_0_80px_rgba(139,92,246,0.3)] group">
+            {/* Animated glowing borders */}
+            <div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-spin pointer-events-none" 
+              style={{ animationDuration: '4s', background: 'conic-gradient(from 0deg, transparent 0 280deg, #8b5cf6 360deg)' }} 
+            />
+            <div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] animate-spin pointer-events-none" 
+              style={{ animationDuration: '6s', animationDirection: 'reverse', background: 'conic-gradient(from 0deg, transparent 0 280deg, #3b82f6 360deg)' }} 
+            />
+            
+            {/* Inner Content */}
+            <div className="relative bg-white dark:bg-slate-900 p-8 rounded-[18px] h-full w-full z-10 flex flex-col items-center animate-in zoom-in-95 duration-500 delay-150">
+              <button onClick={() => setShowWelcome(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+              
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-6 relative">
+                <div className="absolute inset-0 bg-white dark:bg-slate-900 rounded-full m-[2px] flex items-center justify-center">
+                  <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-tr from-violet-500 to-indigo-500">DP</span>
+                </div>
+              </div>
+
+              <div className="text-center mb-8 w-full">
+                <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500 mb-2">{greeting}, Davi!</h2>
+                <p className="text-slate-500 dark:text-slate-400">Aqui tens o resumo de como está a tua saúde financeira neste mês.</p>
+              </div>
+              
+              <div className="space-y-4 w-full">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group-hover:border-indigo-500/30 transition-colors">
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 blur-xl rounded-full" />
+                  <p className="text-sm font-semibold text-slate-500 mb-1">Saldo Atual</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.balance)}</p>
+                </div>
+                
+                {expensesByCategory.length > 0 && (
+                  <div className="bg-rose-50/50 dark:bg-rose-950/20 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/30 relative overflow-hidden group-hover:border-rose-500/30 transition-colors">
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-rose-500/10 blur-xl rounded-full" />
+                    <p className="text-sm font-semibold text-rose-500 mb-2">Maior Gasto do Mês</p>
+                    <div className="flex justify-between items-end relative z-10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shadow-sm shadow-rose-500/50" style={{ backgroundColor: expensesByCategory[0].color }} />
+                        <p className="font-bold text-slate-800 dark:text-rose-100 truncate max-w-[120px]">{expensesByCategory[0].name}</p>
+                      </div>
+                      <p className="text-xl font-bold text-rose-600 dark:text-rose-400">-{formatCurrency(expensesByCategory[0].amount)}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <button onClick={() => setShowWelcome(false)} className="mt-8 w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-1">
+                Aceder ao Dashboard
+              </button>
+            </div>
           </div>
         </div>
       )}
