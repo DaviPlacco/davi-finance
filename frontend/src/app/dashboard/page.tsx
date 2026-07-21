@@ -355,10 +355,20 @@ export default function DashboardPage() {
               </div>
               
               <div className="space-y-4 w-full">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden group-hover:border-indigo-500/30 transition-colors">
-                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 blur-xl rounded-full" />
-                  <p className="text-sm font-semibold text-slate-500 mb-1">Saldo Atual</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.balance)}</p>
+                <div className={`p-5 rounded-2xl border relative overflow-hidden transition-colors ${
+                  summary.balance >= 0 
+                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 group-hover:border-emerald-500/30' 
+                    : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 group-hover:border-rose-500/30'
+                }`}>
+                  <div className={`absolute -right-4 -top-4 w-24 h-24 blur-xl rounded-full ${
+                    summary.balance >= 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10'
+                  }`} />
+                  <p className={`text-sm font-semibold mb-1 ${
+                    summary.balance >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'
+                  }`}>Saldo Atual</p>
+                  <p className={`text-3xl font-bold ${
+                    summary.balance >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+                  }`}>{formatCurrency(summary.balance)}</p>
                 </div>
                 
                 {expensesByCategory.length > 0 && (
