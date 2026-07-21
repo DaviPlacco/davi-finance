@@ -233,7 +233,7 @@ export default function PrevisaoPage() {
           </div>
 
           <div className="glass-card p-6 border-l-4 border-l-primary relative overflow-hidden group hover:-translate-y-1 active:scale-[0.98] transition-all duration-300">
-            <div className="absolute inset-0 bg-primary/5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity" />
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" /> Meta ({customYears} Anos)
             </h3>

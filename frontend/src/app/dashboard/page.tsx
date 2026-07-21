@@ -166,7 +166,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Receitas (Mês)</h3>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Despesas (Mês)</h3>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Investido</h3>
@@ -276,7 +276,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Hover Toast / Tooltip */}
-                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
+                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
                     <div className="font-extrabold text-base">{t.description}</div>
                     <div className="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
                       Categoria: {categories.find((c: any) => c.id === t.category_id)?.name || "Sem Categoria"}
