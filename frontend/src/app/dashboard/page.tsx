@@ -66,8 +66,15 @@ export default function DashboardPage() {
     api.get("/users/me").then(res => {
       if (res.data.profile_image) {
         setProfileImage(res.data.profile_image);
+      } else {
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) setProfileImage(storedImage);
       }
-    }).catch(err => console.error("Erro ao carregar perfil", err));
+    }).catch(err => {
+      console.error("Erro ao carregar perfil", err);
+      const storedImage = localStorage.getItem("profileImage");
+      if (storedImage) setProfileImage(storedImage);
+    });
   }, []);
 
   const expensesByCategory = useMemo(() => {

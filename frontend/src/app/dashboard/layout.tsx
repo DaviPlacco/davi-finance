@@ -38,9 +38,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       api.get("/users/me").then(res => {
         if (res.data.profile_image) {
           setProfileImage(res.data.profile_image);
+        } else {
+          const storedImage = localStorage.getItem("profileImage");
+          if (storedImage) setProfileImage(storedImage);
         }
       }).catch(err => {
         console.error("Erro ao buscar dados do utilizador", err);
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) setProfileImage(storedImage);
       });
 
       // Auto-logout after 15 minutes of inactivity
@@ -268,11 +273,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             const reader = new FileReader();
                             reader.onloadend = async () => {
                               const base64String = reader.result as string;
+                              setProfileImage(base64String); // Update optimistic
+                              localStorage.setItem("profileImage", base64String); // Fallback local
                               try {
                                 await api.put("/users/me/profile-image", { profile_image: base64String });
-                                setProfileImage(base64String);
                               } catch(err) {
-                                console.error("Erro ao salvar imagem", err);
+                                console.error("Erro ao salvar imagem no backend", err);
                               }
                             };
                             reader.readAsDataURL(file);
@@ -283,9 +289,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {profileImage && (
                       <button 
                         onClick={async () => {
+                          setProfileImage(null);
+                          localStorage.removeItem("profileImage");
                           try {
                             await api.put("/users/me/profile-image", { profile_image: "" });
-                            setProfileImage(null);
                           } catch(err) {
                             console.error("Erro ao remover imagem", err);
                           }
