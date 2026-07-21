@@ -152,7 +152,7 @@ export default function OrcamentosPage() {
             }
 
             return (
-              <div key={cat.id} className="glass-card p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300">
+              <div key={cat.id} className="glass-card p-6 flex flex-col hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">

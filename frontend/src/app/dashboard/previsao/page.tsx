@@ -211,29 +211,29 @@ export default function PrevisaoPage() {
 
         {/* Resultados em Cartões */}
         <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 h-fit">
-          <div className="glass-card p-6 border-l-4 border-l-indigo-400 hover:-translate-y-1 transition-transform duration-300">
+          <div className="glass-card p-6 border-l-4 border-l-indigo-400 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <CalendarDays className="w-4 h-4" /> Em 10 Anos
             </h3>
             <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(results.year10)}</p>
           </div>
           
-          <div className="glass-card p-6 border-l-4 border-l-violet-500 hover:-translate-y-1 transition-transform duration-300">
+          <div className="glass-card p-6 border-l-4 border-l-violet-500 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <CalendarDays className="w-4 h-4" /> Em 20 Anos
             </h3>
             <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(results.year20)}</p>
           </div>
 
-          <div className="glass-card p-6 border-l-4 border-l-fuchsia-500 hover:-translate-y-1 transition-transform duration-300">
+          <div className="glass-card p-6 border-l-4 border-l-fuchsia-500 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <CalendarDays className="w-4 h-4" /> Em 30 Anos
             </h3>
             <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(results.year30)}</p>
           </div>
 
-          <div className="glass-card p-6 border-l-4 border-l-primary relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="glass-card p-6 border-l-4 border-l-primary relative overflow-hidden group hover:-translate-y-1 active:scale-[0.98] transition-all duration-300">
+            <div className="absolute inset-0 bg-primary/5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" />
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" /> Meta ({customYears} Anos)
             </h3>

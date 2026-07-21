@@ -149,21 +149,21 @@ export default function SimulacaoPage() {
 
       {/* Painel de Resultados */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card p-6 border-l-4 border-l-emerald-500 hover:-translate-y-1 transition-transform duration-300">
+        <div className="glass-card p-6 border-l-4 border-l-emerald-500 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-500" /> Total Receitas
           </h3>
           <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(totalIncome)}</p>
         </div>
 
-        <div className="glass-card p-6 border-l-4 border-l-rose-500 hover:-translate-y-1 transition-transform duration-300">
+        <div className="glass-card p-6 border-l-4 border-l-rose-500 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300">
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
             <TrendingDown className="w-4 h-4 text-rose-500" /> Total Despesas
           </h3>
           <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(totalExpense)}</p>
         </div>
 
-        <div className={`glass-card p-6 border-l-4 hover:-translate-y-1 transition-transform duration-300 ${balance >= 0 ? 'border-l-primary' : 'border-l-rose-600'}`}>
+        <div className={`glass-card p-6 border-l-4 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300 ${balance >= 0 ? 'border-l-primary' : 'border-l-rose-600'}`}>
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
             <Wallet className={`w-4 h-4 ${balance >= 0 ? 'text-primary' : 'text-rose-600'}`} /> Saldo Previsto (Sobra)
           </h3>
@@ -227,7 +227,7 @@ export default function SimulacaoPage() {
                     <span className="font-bold text-emerald-500">{formatCurrency(income.amount)}</span>
                     <button 
                       onClick={() => handleRemoveIncome(income.id)}
-                      className="text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-slate-400 hover:text-rose-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -288,7 +288,7 @@ export default function SimulacaoPage() {
                     <span className="font-bold text-rose-500">{formatCurrency(expense.amount)}</span>
                     <button 
                       onClick={() => handleRemoveExpense(expense.id)}
-                      className="text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-slate-400 hover:text-rose-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

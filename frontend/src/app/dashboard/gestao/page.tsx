@@ -359,7 +359,7 @@ export default function GestaoPage() {
                     <th className="p-4 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">Descrição</th>
                     <th className="p-4 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">Categoria</th>
                     <th className="p-4 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 text-right">Valor</th>
-                    <th className="p-4 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Ações</th>
+                    <th className="p-4 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center sticky right-0 bg-white dark:bg-[#0b1120] z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] dark:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.2)]">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -385,7 +385,7 @@ export default function GestaoPage() {
                           <td className={`p-4 text-right font-bold ${isIncome ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-900 dark:text-slate-200'}`}>
                             {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                           </td>
-                          <td className="p-4 text-center">
+                          <td className="p-4 text-center sticky right-0 bg-white dark:bg-[#0b1120] z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] dark:shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.2)]">
                             <button onClick={() => handleDelete(t.id)} className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-rose-950/30">
                               <Trash2 className="w-4 h-4" />
                             </button>

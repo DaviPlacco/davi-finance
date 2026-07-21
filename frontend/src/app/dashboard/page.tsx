@@ -151,7 +151,7 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default shadow-[0_0_30px_rgba(139,92,246,0.15)] dark:shadow-[0_0_50px_rgba(139,92,246,0.15)]">
+        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default shadow-[0_0_30px_rgba(139,92,246,0.15)] dark:shadow-[0_0_50px_rgba(139,92,246,0.15)]">
           <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 group-hover:opacity-0 transition-opacity duration-500 pointer-events-none" />
           <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-fuchsia-500/40 blur-[50px] pointer-events-none rounded-full" />
           <div className="relative z-10">
@@ -165,8 +165,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Receitas (Mês)</h3>
@@ -178,8 +178,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Despesas (Mês)</h3>
@@ -191,8 +191,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 cursor-default">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/30 hover:-translate-y-1 active:scale-[0.98] cursor-default">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-indigo-900 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-500 group-hover:text-violet-100 uppercase tracking-wider transition-colors duration-500">Investido</h3>
@@ -276,7 +276,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Hover Toast / Tooltip */}
-                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
+                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
                     <div className="font-extrabold text-base">{t.description}</div>
                     <div className="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
                       Categoria: {categories.find((c: any) => c.id === t.category_id)?.name || "Sem Categoria"}
@@ -414,7 +414,7 @@ export default function DashboardPage() {
                 )}
               </div>
               
-              <button onClick={() => setShowWelcome(false)} className="mt-8 w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-1">
+              <button onClick={() => setShowWelcome(false)} className="mt-8 w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-1 active:scale-[0.98]">
                 Aceder ao Dashboard
               </button>
             </div>

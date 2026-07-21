@@ -292,7 +292,7 @@ export default function InvestimentosPage() {
                           <span className="inline-block px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-md mb-2">{inv.asset_type}</span>
                           <h3 className="text-xl font-bold text-slate-900 dark:text-white">{inv.name}</h3>
                         </div>
-                        <div className="flex gap-2 relative z-20">
+                        <div className="flex flex-wrap justify-end gap-2 relative z-20">
                           <button onClick={() => { setAdjustInv(inv); setAdjustType("add"); setAdjustModalOpen(true); }} className="p-2 text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-500 rounded-lg transition-colors" title="Adicionar Valor"><Plus className="w-4 h-4" /></button>
                           <button onClick={() => { setAdjustInv(inv); setAdjustType("remove"); setAdjustModalOpen(true); }} className="p-2 text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-500 rounded-lg transition-colors" title="Retirar Valor"><Minus className="w-4 h-4" /></button>
                           <button onClick={() => handleEdit(inv)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-colors" title="Editar Ativo"><Pencil className="w-4 h-4" /></button>
