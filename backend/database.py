@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./davi_finance.db")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", os.getenv("MYSQL_DATABASE_URL", "sqlite:///./davi_finance.db"))
 
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
