@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum, Boolean
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum, Boolean, Text
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -24,7 +24,7 @@ class User(Base):
     username = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    profile_image = Column(String(255), nullable=True)
+    profile_image = Column(Text(length=4294967295), nullable=True)
 
     categories = relationship("Category", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")

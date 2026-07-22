@@ -24,6 +24,7 @@ supabase_engine = create_engine(SUPABASE_URL)
 mysql_engine = create_engine(MYSQL_URL)
 
 # Criar tabelas no MySQL
+models.Base.metadata.drop_all(bind=mysql_engine)
 models.Base.metadata.create_all(bind=mysql_engine)
 
 # Sessions
