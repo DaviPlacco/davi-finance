@@ -21,10 +21,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    username = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    profile_image = Column(String, nullable=True)
+    profile_image = Column(String(255), nullable=True)
 
     categories = relationship("Category", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
@@ -35,8 +35,8 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    name = Column(String, nullable=False)
-    color = Column(String, default="#3b82f6")
+    name = Column(String(255), nullable=False)
+    color = Column(String(50), default="#3b82f6")
     type = Column(Enum(CategoryType), nullable=False)
     budget_limit = Column(Float, nullable=True)
     
@@ -51,7 +51,7 @@ class Transaction(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     amount = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
-    description = Column(String)
+    description = Column(String(500))
     type = Column(Enum(TransactionType), nullable=False)
 
     user = relationship("User", back_populates="transactions")
@@ -62,8 +62,8 @@ class Investment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    name = Column(String, nullable=False)
-    asset_type = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    asset_type = Column(String(50), nullable=False)
     balance = Column(Float, default=0.0)
     target = Column(Float, nullable=True)
     
