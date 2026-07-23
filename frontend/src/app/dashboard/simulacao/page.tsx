@@ -180,17 +180,27 @@ export default function SimulacaoPage() {
     }
   };
 
-  const handleDeleteSimulation = async (id: number) => {
-    if (confirm("Tens a certeza que queres apagar esta simulação?")) {
-      try {
-         await api.delete(`/simulations/${id}`);
-         toast.success("Simulação apagada.");
-         fetchSimulations();
-         if (viewingSimulation?.id === id) setViewingSimulation(null);
-      } catch (e) {
-         toast.error("Erro ao apagar simulação.");
+  const handleDeleteSimulation = (id: number) => {
+    toast("Apagar simulação?", {
+      description: "Esta ação não pode ser desfeita.",
+      action: {
+        label: "Sim, apagar",
+        onClick: async () => {
+          try {
+             await api.delete(`/simulations/${id}`);
+             toast.success("Simulação apagada.");
+             fetchSimulations();
+             if (viewingSimulation?.id === id) setViewingSimulation(null);
+          } catch (e) {
+             toast.error("Erro ao apagar simulação.");
+          }
+        }
+      },
+      cancel: {
+        label: "Cancelar",
+        onClick: () => {}
       }
-    }
+    });
   };
 
   return (
