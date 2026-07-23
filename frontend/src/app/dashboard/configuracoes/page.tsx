@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { Save, Phone, Info } from "lucide-react";
-import { toast } from "sonner";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function ConfiguracoesPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -55,6 +55,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto w-full">
+      <Toaster position="top-right" />
       
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Configurações</h1>
