@@ -93,7 +93,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Simulação", href: "/dashboard/simulacao", icon: Lightbulb },
     { name: "Orçamentos", href: "/dashboard/orcamentos", icon: PieChart },
     { name: "Relatórios", href: "/dashboard/relatorios", icon: FileText },
-    { name: "Configurações", href: "/dashboard/configuracoes", icon: Settings },
   ];
 
   return (

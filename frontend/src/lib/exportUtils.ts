@@ -16,40 +16,6 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("pt-PT");
 };
 
-export const generateWhatsappReport = async (year: number, month: number): Promise<string> => {
-  try {
-    const response = await api.get("/transactions");
-    const transactions = response.data;
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-
-    transactions.forEach((t: any) => {
-      const date = new Date(t.date);
-      if (date.getFullYear() === year && (date.getMonth() + 1) === month) {
-        const isIncome = t.type && t.type.toUpperCase() === "INCOME";
-        if (isIncome) totalIncome += t.amount;
-        else totalExpense += t.amount;
-      }
-    });
-
-    const balance = totalIncome - totalExpense;
-
-    let emoji = balance >= 0 ? "📈" : "📉";
-    
-    const text = `*Relatório Financeiro: ${month}/${year}* 📊\n\n` +
-      `🟢 *Total Receitas:* ${formatCurrency(totalIncome)}\n` +
-      `🔴 *Total Despesas:* ${formatCurrency(totalExpense)}\n\n` +
-      `${emoji} *Saldo Líquido:* ${formatCurrency(balance)}\n\n` +
-      `Gerado pela PL Finance 🚀`;
-      
-    return text;
-  } catch (error) {
-    console.error("Erro ao gerar texto para WhatsApp:", error);
-    throw error;
-  }
-};
-
 export const exportToCSV = async () => {
   try {
     const [transactionsRes, categoriesRes] = await Promise.all([

@@ -25,8 +25,6 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     profile_image = Column(Text(length=4294967295), nullable=True)
-    whatsapp_number = Column(String(50), nullable=True)
-    whatsapp_report_frequency = Column(String(20), default="off")
 
     categories = relationship("Category", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
