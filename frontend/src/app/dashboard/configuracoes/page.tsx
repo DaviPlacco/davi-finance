@@ -57,7 +57,7 @@ export default function ConfiguracoesPage() {
     <div className="p-4 md:p-8 max-w-4xl mx-auto w-full">
       
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Integrações</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Configurações</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-2">Gere as tuas preferências e integrações da plataforma.</p>
       </div>
 
