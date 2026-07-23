@@ -6,7 +6,7 @@ from sqlalchemy import extract
 from datetime import timedelta, datetime
 import calendar
 import random
-from typing import Optional
+from typing import Optional, List
 import models, schemas, auth
 from database import engine, get_db
 import os
@@ -347,3 +347,60 @@ def get_summary(
         "investments": total_invested,
         "chartData": chart_data
     }
+
+@app.get("/reports/history")
+def get_reports_history(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == current_user.id).all()
+    
+    history_map = {}
+    for t in transactions:
+        year = t.date.year
+        month = t.date.month
+        key = f"{year}-{month:02d}"
+        
+        if key not in history_map:
+            history_map[key] = {
+                "year": year,
+                "month": month,
+                "income": 0,
+                "expense": 0,
+            }
+            
+        if t.type == models.TransactionType.INCOME:
+            history_map[key]["income"] += t.amount
+        elif t.type == models.TransactionType.EXPENSE:
+            history_map[key]["expense"] += t.amount
+            
+    history_list = []
+    for k, v in history_map.items():
+        v["balance"] = v["income"] - v["expense"]
+        history_list.append(v)
+        
+    history_list.sort(key=lambda x: (x["year"], x["month"]), reverse=True)
+    return history_list
+
+@app.post("/simulations", response_model=schemas.SimulationResponse)
+def create_simulation(sim: schemas.SimulationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_sim = models.Simulation(
+        user_id=current_user.id,
+        name=sim.name,
+        incomes_data=sim.incomes_data,
+        expenses_data=sim.expenses_data
+    )
+    db.add(db_sim)
+    db.commit()
+    db.refresh(db_sim)
+    return db_sim
+
+@app.get("/simulations", response_model=List[schemas.SimulationResponse])
+def get_simulations(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    return db.query(models.Simulation).filter(models.Simulation.user_id == current_user.id).order_by(models.Simulation.created_at.desc()).all()
+
+@app.delete("/simulations/{sim_id}")
+def delete_simulation(sim_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_sim = db.query(models.Simulation).filter(models.Simulation.id == sim_id, models.Simulation.user_id == current_user.id).first()
+    if not db_sim:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    db.delete(db_sim)
+    db.commit()
+    return {"message": "Simulation deleted"}

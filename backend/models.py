@@ -29,6 +29,7 @@ class User(Base):
     categories = relationship("Category", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
     investments = relationship("Investment", back_populates="user", cascade="all, delete-orphan")
+    simulations = relationship("Simulation", back_populates="user", cascade="all, delete-orphan")
 
 class Category(Base):
     __tablename__ = "categories"
@@ -69,6 +70,18 @@ class Investment(Base):
     
     user = relationship("User", back_populates="investments")
     logs = relationship("InvestmentLog", back_populates="investment", cascade="all, delete-orphan")
+
+class Simulation(Base):
+    __tablename__ = "simulations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    incomes_data = Column(Text(length=4294967295), nullable=False)
+    expenses_data = Column(Text(length=4294967295), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="simulations")
 
 class InvestmentLog(Base):
     __tablename__ = "investment_logs"

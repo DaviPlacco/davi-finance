@@ -72,3 +72,19 @@ class InvestmentResponse(InvestmentBase):
     user_id: int
     class Config:
         from_attributes = True
+
+# Simulation Schemas
+class SimulationBase(BaseModel):
+    name: str
+    incomes_data: str
+    expenses_data: str
+
+class SimulationCreate(SimulationBase):
+    pass
+
+class SimulationResponse(SimulationBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True

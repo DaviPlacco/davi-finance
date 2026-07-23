@@ -1,8 +1,24 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Lightbulb, Plus, Trash2, TrendingUp, TrendingDown, Wallet, Calculator, FileText, Download } from "lucide-react";
+import { Lightbulb, Plus, Trash2, TrendingUp, TrendingDown, Wallet, Calculator, FileText, Download, Save, X, Eye } from "lucide-react";
 import { exportSimulacaoToCSV, exportSimulacaoToPDF } from "@/lib/exportUtils";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
+type Transaction = {
+  id: string;
+  name: string;
+  amount: number;
+};
+
+type SavedSimulation = {
+  id: number;
+  name: string;
+  incomes_data: string;
+  expenses_data: string;
+  created_at: string;
+};
 
 type Transaction = {
   id: string;
@@ -19,7 +35,23 @@ export default function SimulacaoPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
+  const [savedSimulations, setSavedSimulations] = useState<SavedSimulation[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [simulationName, setSimulationName] = useState("");
+  const [viewingSimulation, setViewingSimulation] = useState<SavedSimulation | null>(null);
+
+  const fetchSimulations = async () => {
+    try {
+      const res = await api.get("/simulations");
+      setSavedSimulations(res.data);
+    } catch (e) {
+      console.error("Erro ao carregar simulações");
+    }
+  };
+
   useEffect(() => {
+    fetchSimulations();
     const saved = localStorage.getItem("simulacao_cache");
     if (saved) {
       try {
@@ -125,8 +157,44 @@ export default function SimulacaoPage() {
 
   const balance = totalIncome - totalExpense;
 
+  const handleSaveSimulation = async () => {
+    if (!simulationName.trim()) {
+      toast.error("Introduz um nome para a simulação.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await api.post("/simulations", {
+        name: simulationName,
+        incomes_data: JSON.stringify(incomes),
+        expenses_data: JSON.stringify(expenses)
+      });
+      toast.success("Simulação guardada com sucesso!");
+      setShowSaveModal(false);
+      setSimulationName("");
+      fetchSimulations();
+    } catch (error) {
+      toast.error("Erro ao guardar simulação.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteSimulation = async (id: number) => {
+    if (confirm("Tens a certeza que queres apagar esta simulação?")) {
+      try {
+         await api.delete(`/simulations/${id}`);
+         toast.success("Simulação apagada.");
+         fetchSimulations();
+         if (viewingSimulation?.id === id) setViewingSimulation(null);
+      } catch (e) {
+         toast.error("Erro ao apagar simulação.");
+      }
+    }
+  };
+
   return (
-    <div className="animate-in fade-in zoom-in-95 duration-500 pb-10">
+    <div className="animate-in fade-in zoom-in-95 duration-500 pb-10 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
@@ -137,7 +205,10 @@ export default function SimulacaoPage() {
             Planeia e prevê as tuas receitas e despesas para o próximo mês.
           </p>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+          <button onClick={() => setShowSaveModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-all font-semibold text-sm shadow-sm shadow-indigo-500/20">
+            <Save className="w-4 h-4" /> Guardar
+          </button>
           <button onClick={() => exportSimulacaoToCSV(incomes, expenses)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold text-sm shadow-sm">
             <FileText className="w-4 h-4 text-emerald-500" /> Exportar CSV
           </button>
@@ -338,6 +409,191 @@ export default function SimulacaoPage() {
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Simulações Guardadas */}
+      <div className="mt-12 glass-card p-8 border-t-4 border-indigo-500">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+          <Save className="w-6 h-6 text-indigo-500" /> Simulações Guardadas
+        </h2>
+        
+        {savedSimulations.length === 0 ? (
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+            Ainda não guardaste nenhuma simulação.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {savedSimulations.map(sim => {
+               const pIncomes = JSON.parse(sim.incomes_data);
+               const pExpenses = JSON.parse(sim.expenses_data);
+               const tInc = pIncomes.reduce((acc: any, c: any) => acc + c.amount, 0);
+               const tExp = pExpenses.reduce((acc: any, c: any) => acc + c.amount, 0);
+               const sBal = tInc - tExp;
+               
+               return (
+                  <div key={sim.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-5 rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onClick={() => setViewingSimulation(sim)}>
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors line-clamp-1">{sim.name}</h3>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteSimulation(sim.id); }} className="text-slate-400 hover:text-rose-500 p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Receitas:</span>
+                        <span className="font-medium text-emerald-600">{formatCurrency(tInc)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Despesas:</span>
+                        <span className="font-medium text-rose-600">{formatCurrency(tExp)}</span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between font-bold">
+                        <span className="text-slate-700 dark:text-slate-300">Saldo:</span>
+                        <span className={sBal >= 0 ? 'text-emerald-600' : 'text-rose-600'}>{formatCurrency(sBal)}</span>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-xs text-slate-400 text-right">
+                      {new Date(sim.created_at).toLocaleDateString('pt-PT')}
+                    </div>
+                  </div>
+               );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Modal Guardar Simulação */}
+      {showSaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Guardar Simulação</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Dá um nome para identificares esta simulação no futuro (ex: Cenário Pessimista Agosto).</p>
+            <input 
+              type="text" 
+              placeholder="Nome da simulação..." 
+              value={simulationName}
+              onChange={(e) => setSimulationName(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium mb-6"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowSaveModal(false)}
+                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-semibold"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleSaveSimulation}
+                disabled={isSaving}
+                className="flex-1 px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-colors font-semibold disabled:opacity-70"
+              >
+                {isSaving ? 'A guardar...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ver Simulação */}
+      {viewingSimulation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-indigo-500" /> {viewingSimulation.name}
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">Guardada a {new Date(viewingSimulation.created_at).toLocaleDateString('pt-PT')}</p>
+              </div>
+              <button onClick={() => setViewingSimulation(null)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {(() => {
+                const pIncomes = JSON.parse(viewingSimulation.incomes_data);
+                const pExpenses = JSON.parse(viewingSimulation.expenses_data);
+                const tInc = pIncomes.reduce((acc: any, c: any) => acc + c.amount, 0);
+                const tExp = pExpenses.reduce((acc: any, c: any) => acc + c.amount, 0);
+                const sBal = tInc - tExp;
+
+                return (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/30 text-center">
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mb-1">Receitas</p>
+                        <p className="text-xl font-black text-emerald-700 dark:text-emerald-400">{formatCurrency(tInc)}</p>
+                      </div>
+                      <div className="bg-rose-50 dark:bg-rose-900/20 p-4 rounded-xl border border-rose-100 dark:border-rose-800/30 text-center">
+                        <p className="text-xs text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider mb-1">Despesas</p>
+                        <p className="text-xl font-black text-rose-700 dark:text-rose-400">{formatCurrency(tExp)}</p>
+                      </div>
+                      <div className={`p-4 rounded-xl border text-center ${sBal >= 0 ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/30' : 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800/30'}`}>
+                        <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${sBal >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-orange-600 dark:text-orange-400'}`}>Saldo</p>
+                        <p className={`text-xl font-black ${sBal >= 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-orange-700 dark:text-orange-400'}`}>{formatCurrency(sBal)}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 border-b border-slate-200 dark:border-slate-700 pb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-emerald-500" /> Detalhe Receitas
+                        </h4>
+                        <ul className="space-y-2">
+                          {pIncomes.map((inc: any, i: number) => (
+                            <li key={i} className="flex justify-between text-sm">
+                              <span className="text-slate-600 dark:text-slate-400">{inc.name}</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(inc.amount)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3 border-b border-slate-200 dark:border-slate-700 pb-2 flex items-center gap-2">
+                          <TrendingDown className="w-4 h-4 text-rose-500" /> Detalhe Despesas
+                        </h4>
+                        <ul className="space-y-2">
+                          {pExpenses.map((exp: any, i: number) => (
+                            <li key={i} className="flex justify-between text-sm">
+                              <span className="text-slate-600 dark:text-slate-400">{exp.name}</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(exp.amount)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  const pIncomes = JSON.parse(viewingSimulation.incomes_data);
+                  const pExpenses = JSON.parse(viewingSimulation.expenses_data);
+                  exportSimulacaoToCSV(pIncomes, pExpenses);
+                }} 
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500 transition-colors text-sm font-bold shadow-sm"
+              >
+                <FileText className="w-4 h-4" /> CSV
+              </button>
+              <button 
+                onClick={() => {
+                  const pIncomes = JSON.parse(viewingSimulation.incomes_data);
+                  const pExpenses = JSON.parse(viewingSimulation.expenses_data);
+                  exportSimulacaoToPDF(pIncomes, pExpenses);
+                }} 
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-bold shadow-sm"
+              >
+                <Download className="w-4 h-4" /> Exportar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
