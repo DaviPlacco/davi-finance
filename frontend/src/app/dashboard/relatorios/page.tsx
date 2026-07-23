@@ -4,15 +4,19 @@ import { useState } from "react";
 import { Download, FileText, Calendar, CheckCircle } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { toast } from "sonner";
-import { exportGeneralMonthlyReportPDF } from "@/lib/exportUtils";
+import { exportGeneralMonthlyReportPDF, generateWhatsappReport } from "@/lib/exportUtils";
+import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function RelatoriosPage() {
   const currentYear = new Date().getFullYear().toString();
   const currentMonth = (new Date().getMonth() + 1).toString();
+  const router = useRouter();
   
   const [filterYear, setFilterYear] = useState(currentYear);
   const [filterMonth, setFilterMonth] = useState(currentMonth);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
@@ -23,6 +27,36 @@ export default function RelatoriosPage() {
       toast.error("Erro ao gerar relatório.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleWhatsappSend = async () => {
+    setIsSending(true);
+    try {
+      // 1. Check if user has WhatsApp number
+      const userRes = await api.get("/users/me");
+      const whatsappNumber = userRes.data.whatsapp_number;
+
+      if (!whatsappNumber) {
+        toast.error("Número de WhatsApp não configurado.");
+        router.push("/dashboard/configuracoes");
+        return;
+      }
+
+      // 2. Generate Report Text
+      const text = await generateWhatsappReport(parseInt(filterYear), parseInt(filterMonth));
+      
+      // 3. Open WhatsApp Web or App
+      const encodedText = encodeURIComponent(text);
+      const waUrl = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+      
+      window.open(waUrl, "_blank");
+      toast.success("A abrir o WhatsApp...");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao gerar relatório para WhatsApp.");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -76,19 +110,35 @@ export default function RelatoriosPage() {
               />
             </div>
 
-            <button 
-              onClick={handleGenerateReport}
-              disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all disabled:opacity-70"
-            >
-              {isGenerating ? (
-                <>A gerar documento...</>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" /> Exportar PDF Completo
-                </>
-              )}
-            </button>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleGenerateReport}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all disabled:opacity-70"
+              >
+                {isGenerating ? (
+                  <>A gerar documento...</>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" /> Exportar PDF Completo
+                  </>
+                )}
+              </button>
+              
+              <button 
+                onClick={handleWhatsappSend}
+                disabled={isSending}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white font-bold rounded-xl shadow-lg shadow-[#25D366]/30 hover:bg-[#1DA851] transition-all disabled:opacity-70"
+              >
+                {isSending ? (
+                  <>A preparar envio...</>
+                ) : (
+                  <>
+                    <FileText className="w-5 h-5" /> Enviar por WhatsApp
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

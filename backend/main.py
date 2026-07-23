@@ -57,6 +57,18 @@ def update_profile_image(
     db.refresh(current_user)
     return current_user
 
+@app.put("/users/me/settings", response_model=schemas.UserResponse)
+def update_settings(
+    update_data: schemas.UserUpdateSettings,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_user.whatsapp_number = update_data.whatsapp_number
+    current_user.whatsapp_report_frequency = update_data.whatsapp_report_frequency
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
 @app.post("/register", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()

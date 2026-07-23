@@ -7,12 +7,18 @@ from models import CategoryType, TransactionType, InvestmentLogType
 class UserBase(BaseModel):
     username: str
     profile_image: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    whatsapp_report_frequency: Optional[str] = "off"
 
 class UserCreate(UserBase):
     password: str
 
 class UserUpdateProfileImage(BaseModel):
     profile_image: str
+
+class UserUpdateSettings(BaseModel):
+    whatsapp_number: Optional[str] = None
+    whatsapp_report_frequency: Optional[str] = "off"
 
 class UserResponse(UserBase):
     id: int
