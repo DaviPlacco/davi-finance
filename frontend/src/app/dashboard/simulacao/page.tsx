@@ -409,7 +409,6 @@ export default function SimulacaoPage() {
           </div>
         </div>
       </div>
-      </div>
 
       {/* Simulações Guardadas */}
       <div className="mt-12 glass-card p-8 border-t-4 border-indigo-500">
