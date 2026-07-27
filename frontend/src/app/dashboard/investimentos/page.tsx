@@ -308,7 +308,7 @@ export default function InvestimentosPage() {
                         <div className="mt-6">
                           <div className="flex justify-between text-sm mb-2 font-medium">
                             <span className="text-slate-500 flex items-center gap-1"><Target className="w-4 h-4" /> Meta</span>
-                            <span className="text-slate-900">{formatCurrency(inv.target)}</span>
+                            <span className="text-slate-900 dark:text-white">{formatCurrency(inv.target)}</span>
                           </div>
                           <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                             <div className="bg-primary h-2.5 rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
