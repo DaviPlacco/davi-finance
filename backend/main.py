@@ -317,27 +317,49 @@ def get_summary(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    now = datetime.now()
+    
+    # Obter todas as transações (para o saldo cumulativo)
     query = db.query(models.Transaction).filter(models.Transaction.user_id == current_user.id)
-    if year:
-        query = query.filter(extract('year', models.Transaction.date) == year)
-    if month:
-        query = query.filter(extract('month', models.Transaction.date) == month)
-        
-    transactions = query.all()
+    all_transactions = query.all()
     investments = db.query(models.Investment).filter(models.Investment.user_id == current_user.id).all()
     
-    total_income = sum(t.amount for t in transactions if t.type == models.TransactionType.INCOME)
-    total_expense = sum(t.amount for t in transactions if t.type == models.TransactionType.EXPENSE)
+    # Filtrar transações para o mês selecionado
+    selected_transactions = []
+    for t in all_transactions:
+        if year and t.date.year != year:
+            continue
+        if month and t.date.month != month:
+            continue
+        selected_transactions.append(t)
+        
+    # As receitas e despesas do mês só contabilizam transações "efetivas" (não futuras)
+    effective_selected_transactions = [t for t in selected_transactions if t.date <= now]
+    
+    total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME)
+    total_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE)
     total_invested = sum(i.balance for i in investments)
+    
+    # Calcular Saldo Cumulativo
+    if year and month:
+        last_day = calendar.monthrange(year, month)[1]
+        end_of_selected_month = datetime(year, month, last_day, 23, 59, 59)
+        balance_cutoff = min(end_of_selected_month, now)
+    else:
+        balance_cutoff = now
+        
+    cumulative_income = sum(t.amount for t in all_transactions if t.type == models.TransactionType.INCOME and t.date <= balance_cutoff)
+    cumulative_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and t.date <= balance_cutoff)
+    cumulative_balance = cumulative_income - cumulative_expense
     
     chart_data = []
     
-    # Group chart data
+    # Group chart data (apenas transações efetivas)
     if year and month:
         num_days = calendar.monthrange(year, month)[1]
         for day in range(1, num_days + 1):
-            daily_income = sum(t.amount for t in transactions if t.date.day == day and t.type == models.TransactionType.INCOME)
-            daily_expense = sum(t.amount for t in transactions if t.date.day == day and t.type == models.TransactionType.EXPENSE)
+            daily_income = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.INCOME)
+            daily_expense = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.EXPENSE)
             chart_data.append({
                 "name": str(day),
                 "receitas": daily_income,
@@ -346,8 +368,8 @@ def get_summary(
     else:
         months_abbr = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
         for m in range(1, 13):
-            monthly_income = sum(t.amount for t in transactions if t.date.month == m and t.type == models.TransactionType.INCOME)
-            monthly_expense = sum(t.amount for t in transactions if t.date.month == m and t.type == models.TransactionType.EXPENSE)
+            monthly_income = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.INCOME)
+            monthly_expense = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.EXPENSE)
             chart_data.append({
                 "name": months_abbr[m-1],
                 "receitas": monthly_income,
@@ -355,7 +377,7 @@ def get_summary(
             })
 
     return {
-        "balance": total_income - total_expense,
+        "balance": cumulative_balance,
         "income": total_income,
         "expense": total_expense,
         "investments": total_invested,

@@ -375,7 +375,14 @@ export default function GestaoPage() {
                       const category = categories.find((c: any) => c.id === t.category_id);
                       return (
                         <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-50 dark:border-slate-800">
-                          <td className="p-4 text-slate-600 dark:text-slate-400 text-sm font-medium">{formatDate(t.date)}</td>
+                          <td className="p-4 text-slate-600 dark:text-slate-400 text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <span>{formatDate(t.date)}</span>
+                              {new Date(t.date) > new Date() && (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Em Espera</span>
+                              )}
+                            </div>
+                          </td>
                           <td className="p-4 text-slate-900 dark:text-slate-200 font-medium">{t.description || '-'}</td>
                           <td className="p-4">
                             <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap max-w-[120px] truncate text-center align-middle" style={{ backgroundColor: `${category?.color}20`, color: category?.color }} title={category?.name || 'Sem Categoria'}>
