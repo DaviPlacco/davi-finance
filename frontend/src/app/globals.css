@@ -12,6 +12,9 @@
   
   --secondary: #4f46e5; /* Indigo 600 */
   
+  --card-hero-gradient: linear-gradient(135deg, #6d28d9 0%, #4338ca 50%, #312e81 100%);
+  --card-hero-orb: rgba(217, 70, 239, 0.45);
+  
   --card-history-accent: var(--primary);
   --card-history-glow: var(--primary-glow);
   --card-expenses-accent: var(--primary);
@@ -33,6 +36,9 @@
   --primary-glow: rgba(139, 92, 246, 0.45);
   
   --secondary: #818cf8;
+  
+  --card-hero-gradient: linear-gradient(135deg, #6d28d9 0%, #4338ca 50%, #312e81 100%);
+  --card-hero-orb: rgba(217, 70, 239, 0.45);
   
   --card-history-accent: var(--primary);
   --card-history-glow: var(--primary-glow);

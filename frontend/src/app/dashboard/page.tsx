@@ -168,28 +168,25 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <div 
-          className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] cursor-default border border-slate-200/80 dark:border-slate-800"
-          style={{
-            boxShadow: '0 10px 40px -10px var(--primary-glow, rgba(139, 92, 246, 0.15))'
-          }}
+          className="glass-card p-6 relative overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] cursor-default border border-slate-200/80 dark:border-slate-800 shadow-[0_0_30px_rgba(139,92,246,0.12)] dark:shadow-[0_0_50px_rgba(139,92,246,0.15)]"
         >
           <div 
             className="absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-500 pointer-events-none" 
             style={{
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
+              background: 'var(--card-hero-gradient, linear-gradient(135deg, #6d28d9 0%, #4338ca 50%, #312e81 100%))'
             }}
           />
           <div 
             className="absolute -bottom-16 -right-16 w-48 h-48 blur-[50px] pointer-events-none rounded-full" 
             style={{
-              backgroundColor: 'var(--primary-glow)'
+              backgroundColor: 'var(--card-hero-orb, rgba(217, 70, 239, 0.45))'
             }}
           />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs sm:text-sm font-bold text-white/90 group-hover:text-slate-500 dark:group-hover:text-slate-400 uppercase tracking-wider transition-colors duration-500">Saldo Atual</h3>
-              <div className="p-2 bg-white/20 group-hover:bg-primary/10 rounded-lg transition-colors duration-500">
-                <Wallet className="w-5 h-5 text-white group-hover:text-primary transition-colors duration-500" />
+              <h3 className="text-xs sm:text-sm font-bold text-violet-100 group-hover:text-slate-500 dark:group-hover:text-slate-400 uppercase tracking-wider transition-colors duration-500">Saldo Atual</h3>
+              <div className="p-2 bg-white/20 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 rounded-lg transition-colors duration-500">
+                <Wallet className="w-5 h-5 text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-500" />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-extrabold text-white group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-500">{formatCurrency(summary.balance)}</p>
@@ -226,7 +223,7 @@ export default function DashboardPage() {
           <div 
             className="absolute inset-0 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-500 pointer-events-none" 
             style={{
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
+              background: 'var(--card-hero-gradient, linear-gradient(135deg, #6d28d9 0%, #4338ca 50%, #312e81 100%))'
             }}
           />
           <div className="relative z-10">
@@ -270,13 +267,10 @@ export default function DashboardPage() {
         </div>
 
         <div 
-          className="glass-card p-5 sm:p-6 relative overflow-hidden border border-slate-200/80 dark:border-slate-800"
-          style={{
-            boxShadow: '0 0 30px var(--primary-glow)'
-          }}
+          className="glass-card p-5 sm:p-6 relative overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-[0_0_30px_rgba(139,92,246,0.04)] dark:shadow-[0_0_40px_rgba(139,92,246,0.04)]"
         >
           <div 
-            className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[60px] pointer-events-none rounded-full" 
+            className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[60px] pointer-events-none rounded-full opacity-30 dark:opacity-20" 
             style={{
               backgroundColor: 'var(--primary-glow)'
             }}

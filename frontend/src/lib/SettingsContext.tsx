@@ -9,6 +9,8 @@ export interface PalettePreset {
   name: string;
   description: string;
   preview: string[];
+  cardGradient: string;
+  cardOrb: string;
   light: {
     primary: string;
     secondary: string;
@@ -33,6 +35,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Default Violet & Indigo",
     description: "O visual clássico e sofisticado original da plataforma",
     preview: ["#8b5cf6", "#4f46e5"],
+    cardGradient: "linear-gradient(135deg, #6d28d9 0%, #4338ca 50%, #312e81 100%)",
+    cardOrb: "rgba(217, 70, 239, 0.45)",
     light: {
       primary: "#2e1065",
       secondary: "#4f46e5",
@@ -55,6 +59,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Emerald Wealth",
     description: "Tons esmeralda e menta voltados para prosperidade e crescimento",
     preview: ["#10b981", "#059669"],
+    cardGradient: "linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%)",
+    cardOrb: "rgba(52, 211, 153, 0.45)",
     light: {
       primary: "#064e3b",
       secondary: "#059669",
@@ -77,6 +83,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Royal Amber & Gold",
     description: "Dourado luxuoso e tons quentes de âmbar refinado",
     preview: ["#f59e0b", "#d97706"],
+    cardGradient: "linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%)",
+    cardOrb: "rgba(251, 191, 36, 0.45)",
     light: {
       primary: "#78350f",
       secondary: "#d97706",
@@ -99,6 +107,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Ocean Sapphire",
     description: "Azul marinho profundo com safira tecnológica de alta clareza",
     preview: ["#3b82f6", "#2563eb"],
+    cardGradient: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e3a8a 100%)",
+    cardOrb: "rgba(96, 165, 250, 0.45)",
     light: {
       primary: "#1e3a8a",
       secondary: "#2563eb",
@@ -121,6 +131,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Cyberpunk Neon",
     description: "Ciano elétrico vibrante com toques fúcsia futuristas",
     preview: ["#06b6d4", "#d946ef"],
+    cardGradient: "linear-gradient(135deg, #0891b2 0%, #0e7490 40%, #581c87 100%)",
+    cardOrb: "rgba(217, 70, 239, 0.5)",
     light: {
       primary: "#164e63",
       secondary: "#0891b2",
@@ -143,6 +155,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Ruby Crimson",
     description: "Rubi elegante e carmesim aveludado de alto impacto visual",
     preview: ["#f43f5e", "#e11d48"],
+    cardGradient: "linear-gradient(135deg, #e11d48 0%, #be123c 50%, #881337 100%)",
+    cardOrb: "rgba(251, 113, 133, 0.45)",
     light: {
       primary: "#881337",
       secondary: "#e11d48",
@@ -165,6 +179,8 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     name: "Obsidian Titanium",
     description: "Titânio minimalista, preto obsidiana e prata espacial moderna",
     preview: ["#94a3b8", "#475569"],
+    cardGradient: "linear-gradient(135deg, #334155 0%, #1e293b 50%, #0f172a 100%)",
+    cardOrb: "rgba(148, 163, 184, 0.35)",
     light: {
       primary: "#0f172a",
       secondary: "#475569",
@@ -294,6 +310,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty("--secondary", customSecondary);
       root.style.setProperty("--primary-glow", `${customPrimary}55`);
       root.style.setProperty("--secondary-glow", `${customSecondary}55`);
+      root.style.setProperty("--card-hero-gradient", `linear-gradient(135deg, ${customPrimary} 0%, ${customSecondary} 100%)`);
+      root.style.setProperty("--card-hero-orb", `${customPrimary}70`);
       root.style.setProperty("--bg-glow-1", `${customPrimary}26`);
       root.style.setProperty("--bg-glow-2", `${customSecondary}26`);
       root.style.setProperty("--bg-glow-3", `${customPrimary}1a`);
@@ -304,6 +322,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty("--secondary", colors.secondary);
       root.style.setProperty("--primary-glow", colors.glow);
       root.style.setProperty("--secondary-glow", colors.glow);
+      root.style.setProperty("--card-hero-gradient", preset.cardGradient);
+      root.style.setProperty("--card-hero-orb", preset.cardOrb);
       root.style.setProperty("--bg-glow-1", colors.bgGlow1);
       root.style.setProperty("--bg-glow-2", colors.bgGlow2);
       root.style.setProperty("--bg-glow-3", colors.bgGlow3);
@@ -350,6 +370,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         root.style.setProperty("--secondary", colors.secondary);
         root.style.setProperty("--primary-glow", colors.glow);
         root.style.setProperty("--secondary-glow", colors.glow);
+        root.style.setProperty("--card-hero-gradient", preset.cardGradient);
+        root.style.setProperty("--card-hero-orb", preset.cardOrb);
         root.style.setProperty("--bg-glow-1", colors.bgGlow1);
         root.style.setProperty("--bg-glow-2", colors.bgGlow2);
         root.style.setProperty("--bg-glow-3", colors.bgGlow3);
