@@ -15,8 +15,10 @@ import {
   Area,
   AreaChart
 } from "recharts";
+import { useSettings } from "@/lib/SettingsContext";
 
 export default function PrevisaoPage() {
+  const { primaryColor } = useSettings();
   const [initialAmount, setInitialAmount] = useState<string>("10000");
   const [monthlyContribution, setMonthlyContribution] = useState<string>("500");
   const [annualRate, setAnnualRate] = useState<string>("8");
@@ -254,8 +256,8 @@ export default function PrevisaoPage() {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                  <stop offset="5%" stopColor={primaryColor || "#4f46e5"} stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor={primaryColor || "#4f46e5"} stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorInvestido" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2}/>
@@ -282,11 +284,11 @@ export default function PrevisaoPage() {
               <Area 
                 type="monotone" 
                 dataKey="Total" 
-                stroke="#4f46e5" 
+                stroke={primaryColor || "#4f46e5"} 
                 strokeWidth={3}
                 fillOpacity={1} 
                 fill="url(#colorTotal)" 
-                activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
+                activeDot={{ r: 6, strokeWidth: 0, fill: primaryColor || '#4f46e5' }}
               />
               <Area 
                 type="monotone" 

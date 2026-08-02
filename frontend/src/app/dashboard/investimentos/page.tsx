@@ -6,8 +6,10 @@ import { TrendingUp, Plus, Target, PiggyBank, Pencil, Trash2, X, Minus } from "l
 import { CustomSelect } from "@/components/CustomSelect";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useSettings } from "@/lib/SettingsContext";
 
 export default function InvestimentosPage() {
+  const { primaryColor } = useSettings();
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -265,7 +267,14 @@ export default function InvestimentosPage() {
                     itemStyle={{ color: '#e2e8f0', fontWeight: 500 }}
                     formatter={(value: number) => [`${formatCurrency(value)}`, 'Património']}
                   />
-                  <Line type="monotone" dataKey="valor" stroke="#0052ff" strokeWidth={3} dot={{ fill: '#0052ff', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#fff', stroke: '#0052ff' }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="valor" 
+                    stroke={primaryColor || "#8b5cf6"} 
+                    strokeWidth={3} 
+                    dot={{ fill: primaryColor || "#8b5cf6", strokeWidth: 2, r: 4 }} 
+                    activeDot={{ r: 6, fill: '#fff', stroke: primaryColor || "#8b5cf6" }} 
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>

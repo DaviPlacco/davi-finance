@@ -166,8 +166,8 @@ export default function RelatoriosPage() {
 
       <div className="glass-card p-8 mt-8">
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-            <Clock className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <div className="p-3 bg-primary/10 rounded-xl">
+            <Clock className="w-6 h-6 text-primary" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Histórico de Relatórios</h2>
         </div>

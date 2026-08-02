@@ -13,11 +13,17 @@ export interface PalettePreset {
     primary: string;
     secondary: string;
     glow: string;
+    bgGlow1: string;
+    bgGlow2: string;
+    bgGlow3: string;
   };
   dark: {
     primary: string;
     secondary: string;
     glow: string;
+    bgGlow1: string;
+    bgGlow2: string;
+    bgGlow3: string;
   };
 }
 
@@ -30,12 +36,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#2e1065",
       secondary: "#4f46e5",
-      glow: "rgba(139, 92, 246, 0.35)"
+      glow: "rgba(139, 92, 246, 0.35)",
+      bgGlow1: "rgba(79, 70, 229, 0.15)",
+      bgGlow2: "rgba(139, 92, 246, 0.15)",
+      bgGlow3: "rgba(192, 38, 211, 0.10)"
     },
     dark: {
       primary: "#8b5cf6",
       secondary: "#818cf8",
-      glow: "rgba(139, 92, 246, 0.45)"
+      glow: "rgba(139, 92, 246, 0.45)",
+      bgGlow1: "rgba(79, 70, 229, 0.18)",
+      bgGlow2: "rgba(139, 92, 246, 0.18)",
+      bgGlow3: "rgba(192, 38, 211, 0.12)"
     }
   },
   {
@@ -46,12 +58,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#064e3b",
       secondary: "#059669",
-      glow: "rgba(16, 185, 129, 0.35)"
+      glow: "rgba(16, 185, 129, 0.35)",
+      bgGlow1: "rgba(5, 150, 105, 0.15)",
+      bgGlow2: "rgba(16, 185, 129, 0.15)",
+      bgGlow3: "rgba(20, 184, 166, 0.10)"
     },
     dark: {
       primary: "#10b981",
       secondary: "#34d399",
-      glow: "rgba(16, 185, 129, 0.45)"
+      glow: "rgba(16, 185, 129, 0.45)",
+      bgGlow1: "rgba(5, 150, 105, 0.18)",
+      bgGlow2: "rgba(16, 185, 129, 0.18)",
+      bgGlow3: "rgba(20, 184, 166, 0.12)"
     }
   },
   {
@@ -62,12 +80,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#78350f",
       secondary: "#d97706",
-      glow: "rgba(245, 158, 11, 0.35)"
+      glow: "rgba(245, 158, 11, 0.35)",
+      bgGlow1: "rgba(217, 119, 6, 0.15)",
+      bgGlow2: "rgba(245, 158, 11, 0.15)",
+      bgGlow3: "rgba(251, 191, 36, 0.10)"
     },
     dark: {
       primary: "#f59e0b",
       secondary: "#fbbf24",
-      glow: "rgba(245, 158, 11, 0.45)"
+      glow: "rgba(245, 158, 11, 0.45)",
+      bgGlow1: "rgba(217, 119, 6, 0.18)",
+      bgGlow2: "rgba(245, 158, 11, 0.18)",
+      bgGlow3: "rgba(251, 191, 36, 0.12)"
     }
   },
   {
@@ -78,12 +102,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#1e3a8a",
       secondary: "#2563eb",
-      glow: "rgba(59, 130, 246, 0.35)"
+      glow: "rgba(59, 130, 246, 0.35)",
+      bgGlow1: "rgba(37, 99, 235, 0.15)",
+      bgGlow2: "rgba(59, 130, 246, 0.15)",
+      bgGlow3: "rgba(96, 165, 250, 0.10)"
     },
     dark: {
       primary: "#3b82f6",
       secondary: "#60a5fa",
-      glow: "rgba(59, 130, 246, 0.45)"
+      glow: "rgba(59, 130, 246, 0.45)",
+      bgGlow1: "rgba(37, 99, 235, 0.18)",
+      bgGlow2: "rgba(59, 130, 246, 0.18)",
+      bgGlow3: "rgba(96, 165, 250, 0.12)"
     }
   },
   {
@@ -94,12 +124,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#164e63",
       secondary: "#0891b2",
-      glow: "rgba(6, 182, 212, 0.35)"
+      glow: "rgba(6, 182, 212, 0.35)",
+      bgGlow1: "rgba(8, 145, 178, 0.15)",
+      bgGlow2: "rgba(217, 70, 239, 0.15)",
+      bgGlow3: "rgba(6, 182, 212, 0.10)"
     },
     dark: {
       primary: "#06b6d4",
       secondary: "#d946ef",
-      glow: "rgba(6, 182, 212, 0.45)"
+      glow: "rgba(6, 182, 212, 0.45)",
+      bgGlow1: "rgba(8, 145, 178, 0.18)",
+      bgGlow2: "rgba(217, 70, 239, 0.18)",
+      bgGlow3: "rgba(6, 182, 212, 0.12)"
     }
   },
   {
@@ -110,12 +146,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#881337",
       secondary: "#e11d48",
-      glow: "rgba(244, 63, 94, 0.35)"
+      glow: "rgba(244, 63, 94, 0.35)",
+      bgGlow1: "rgba(225, 29, 72, 0.15)",
+      bgGlow2: "rgba(244, 63, 94, 0.15)",
+      bgGlow3: "rgba(251, 113, 133, 0.10)"
     },
     dark: {
       primary: "#f43f5e",
       secondary: "#fb7185",
-      glow: "rgba(244, 63, 94, 0.45)"
+      glow: "rgba(244, 63, 94, 0.45)",
+      bgGlow1: "rgba(225, 29, 72, 0.18)",
+      bgGlow2: "rgba(244, 63, 94, 0.18)",
+      bgGlow3: "rgba(251, 113, 133, 0.12)"
     }
   },
   {
@@ -126,12 +168,18 @@ export const PALETTE_PRESETS: PalettePreset[] = [
     light: {
       primary: "#0f172a",
       secondary: "#475569",
-      glow: "rgba(148, 163, 184, 0.35)"
+      glow: "rgba(148, 163, 184, 0.35)",
+      bgGlow1: "rgba(71, 85, 105, 0.12)",
+      bgGlow2: "rgba(148, 163, 184, 0.12)",
+      bgGlow3: "rgba(100, 116, 139, 0.08)"
     },
     dark: {
       primary: "#94a3b8",
       secondary: "#cbd5e1",
-      glow: "rgba(203, 213, 225, 0.35)"
+      glow: "rgba(203, 213, 225, 0.35)",
+      bgGlow1: "rgba(71, 85, 105, 0.18)",
+      bgGlow2: "rgba(148, 163, 184, 0.18)",
+      bgGlow3: "rgba(203, 213, 225, 0.10)"
     }
   }
 ];
@@ -173,6 +221,9 @@ type SettingsContextType = {
   topExpensesCustomColor: string;
   setTopExpensesCustomColor: (val: string) => void;
   resetToDefaults: () => void;
+  primaryColor: string;
+  secondaryColor: string;
+  glowColor: string;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -187,6 +238,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [topExpensesCardAccent, setTopExpensesCardAccentState] = useState<CardAccentId>("default");
   const [topExpensesCustomColor, setTopExpensesCustomColorState] = useState("#f43f5e");
   const [mounted, setMounted] = useState(false);
+  const [isDarkState, setIsDarkState] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -213,7 +265,20 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const storedExpCust = localStorage.getItem("df_topExpensesCustomColor");
     if (storedExpCust) setTopExpensesCustomColorState(storedExpCust);
+
+    if (typeof window !== "undefined") {
+      const root = document.documentElement;
+      setIsDarkState(root.classList.contains("dark") || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches));
+    }
   }, []);
+
+  // Compute active colors
+  const activePreset = PALETTE_PRESETS.find((p) => p.id === palette) || PALETTE_PRESETS[0];
+  const activeColors = isDarkState ? activePreset.dark : activePreset.light;
+
+  const resolvedPrimary = palette === "custom" ? customPrimary : activeColors.primary;
+  const resolvedSecondary = palette === "custom" ? customSecondary : activeColors.secondary;
+  const resolvedGlow = palette === "custom" ? `${customPrimary}55` : activeColors.glow;
 
   // Apply CSS Variables dynamically based on palette and dark mode
   useEffect(() => {
@@ -221,18 +286,27 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const root = document.documentElement;
     const isDark = root.classList.contains("dark") || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setIsDarkState(isDark);
 
-    // Apply Palette Colors
+    // Apply Palette Colors & Ambient Background Glows
     if (palette === "custom") {
       root.style.setProperty("--primary", customPrimary);
       root.style.setProperty("--secondary", customSecondary);
       root.style.setProperty("--primary-glow", `${customPrimary}55`);
+      root.style.setProperty("--secondary-glow", `${customSecondary}55`);
+      root.style.setProperty("--bg-glow-1", `${customPrimary}26`);
+      root.style.setProperty("--bg-glow-2", `${customSecondary}26`);
+      root.style.setProperty("--bg-glow-3", `${customPrimary}1a`);
     } else {
       const preset = PALETTE_PRESETS.find((p) => p.id === palette) || PALETTE_PRESETS[0];
       const colors = isDark ? preset.dark : preset.light;
       root.style.setProperty("--primary", colors.primary);
       root.style.setProperty("--secondary", colors.secondary);
       root.style.setProperty("--primary-glow", colors.glow);
+      root.style.setProperty("--secondary-glow", colors.glow);
+      root.style.setProperty("--bg-glow-1", colors.bgGlow1);
+      root.style.setProperty("--bg-glow-2", colors.bgGlow2);
+      root.style.setProperty("--bg-glow-3", colors.bgGlow3);
     }
 
     // Apply History Card Accent
@@ -268,12 +342,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // Observer for dark mode class toggles on html tag
     const observer = new MutationObserver(() => {
       const currentlyDark = root.classList.contains("dark");
+      setIsDarkState(currentlyDark);
       if (palette !== "custom") {
         const preset = PALETTE_PRESETS.find((p) => p.id === palette) || PALETTE_PRESETS[0];
         const colors = currentlyDark ? preset.dark : preset.light;
         root.style.setProperty("--primary", colors.primary);
         root.style.setProperty("--secondary", colors.secondary);
         root.style.setProperty("--primary-glow", colors.glow);
+        root.style.setProperty("--secondary-glow", colors.glow);
+        root.style.setProperty("--bg-glow-1", colors.bgGlow1);
+        root.style.setProperty("--bg-glow-2", colors.bgGlow2);
+        root.style.setProperty("--bg-glow-3", colors.bgGlow3);
       }
     });
 
@@ -353,7 +432,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setTopExpensesCardAccent,
         topExpensesCustomColor,
         setTopExpensesCustomColor,
-        resetToDefaults
+        resetToDefaults,
+        primaryColor: resolvedPrimary,
+        secondaryColor: resolvedSecondary,
+        glowColor: resolvedGlow
       }}
     >
       {children}

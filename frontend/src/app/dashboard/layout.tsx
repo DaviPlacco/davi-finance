@@ -144,10 +144,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row relative overflow-hidden transition-colors duration-300">
-      {/* Background aesthetics */}
-      <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-600/15 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/15 blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] left-[30%] w-[20%] h-[20%] rounded-full bg-fuchsia-600/10 blur-[100px] pointer-events-none" />
+      {/* Background aesthetics dynamically adapting to selected palette */}
+      <div 
+        className="absolute top-[-10%] right-[-5%] w-[42%] h-[42%] rounded-full blur-[130px] pointer-events-none transition-all duration-700" 
+        style={{ backgroundColor: 'var(--bg-glow-1, var(--primary-glow))' }}
+      />
+      <div 
+        className="absolute bottom-[-10%] left-[-5%] w-[42%] h-[42%] rounded-full blur-[130px] pointer-events-none transition-all duration-700" 
+        style={{ backgroundColor: 'var(--bg-glow-2, var(--secondary-glow))' }}
+      />
+      <div 
+        className="absolute top-[35%] left-[25%] w-[25%] h-[25%] rounded-full blur-[110px] pointer-events-none transition-all duration-700 opacity-60" 
+        style={{ backgroundColor: 'var(--bg-glow-3, var(--primary-glow))' }}
+      />
 
       {/* Sidebar Navigation */}
       <nav className={`w-full ${isCollapsed ? 'md:w-20' : 'md:w-64'} bg-white dark:bg-slate-900 md:h-screen md:rounded-none md:border-r border-b md:border-b-0 border-slate-200/50 dark:border-slate-800/50 flex flex-col z-10 transition-all duration-300 relative shrink-0`}>
@@ -157,7 +166,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {profileImage ? (
                 <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-sm">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold border-2 shadow-sm transition-all duration-500"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    borderColor: 'var(--primary)'
+                  }}
+                >
                   {username.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -171,7 +186,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {profileImage ? (
                 <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-primary shadow-sm">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold border-2 shadow-sm transition-all duration-500"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    borderColor: 'var(--primary)'
+                  }}
+                >
                   {username.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -202,9 +223,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   isCollapsed ? 'justify-center w-12 h-12 mx-auto rounded-2xl' : 'py-2.5 px-3.5 sm:py-3 sm:px-4 rounded-xl'
                 } font-medium ${
                   isActive 
-                  ? "bg-primary text-white shadow-[0_0_20px_rgba(139,92,246,0.5)] border border-white/10 dark:border-white/5 font-semibold" 
+                  ? "bg-primary text-white border border-white/10 dark:border-white/5 font-semibold" 
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent"
                 }`}
+                style={{
+                  boxShadow: isActive ? '0 0 22px var(--primary-glow)' : undefined
+                }}
                 title={isCollapsed ? item.name : undefined}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />

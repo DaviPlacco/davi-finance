@@ -339,7 +339,7 @@ export default function GestaoPage() {
           <div className="glass-card p-5 sm:p-6 relative overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-900/5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 Previsão de Gastos
@@ -382,7 +382,7 @@ export default function GestaoPage() {
               </div>
               <button 
                 type="submit" 
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm uppercase tracking-wider mt-2"
+                className="w-full py-3 bg-primary hover:brightness-110 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm uppercase tracking-wider mt-2"
               >
                 Guardar Previsão
               </button>

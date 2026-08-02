@@ -5,8 +5,10 @@ import { api } from "@/lib/api";
 import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, Wallet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { CustomSelect } from "@/components/CustomSelect";
+import { useSettings } from "@/lib/SettingsContext";
 
 export default function DashboardPage() {
+  const { primaryColor } = useSettings();
   const [summary, setSummary] = useState({ balance: 0, income: 0, expense: 0, investments: 0, chartData: [] });
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -274,7 +276,14 @@ export default function DashboardPage() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={yAxisTickFormatter} width={45} />
                 <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)', color: '#f8fafc' }} itemStyle={{ color: '#e2e8f0', fontWeight: 500 }} />
-                <Line type="monotone" dataKey="receitas" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--primary)', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                <Line 
+                  type="monotone" 
+                  dataKey="receitas" 
+                  stroke={primaryColor || "#8b5cf6"} 
+                  strokeWidth={3} 
+                  dot={{ r: 4, fill: primaryColor || "#8b5cf6", strokeWidth: 0 }} 
+                  activeDot={{ r: 6, fill: '#fff', stroke: primaryColor || "#8b5cf6", strokeWidth: 2 }} 
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>

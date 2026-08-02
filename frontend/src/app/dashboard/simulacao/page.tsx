@@ -210,7 +210,7 @@ export default function SimulacaoPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
-          <button onClick={() => setShowSaveModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-all font-semibold text-xs sm:text-sm shadow-sm shadow-indigo-500/20">
+          <button onClick={() => setShowSaveModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-primary hover:brightness-110 text-white rounded-xl transition-all font-semibold text-xs sm:text-sm shadow-sm shadow-primary/20">
             <Save className="w-4 h-4" /> <span>Guardar</span>
           </button>
           <button onClick={() => exportSimulacaoToCSV(incomes, expenses)} className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold text-xs sm:text-sm shadow-sm">
@@ -489,7 +489,7 @@ export default function SimulacaoPage() {
               <button 
                 onClick={handleSaveSimulation}
                 disabled={isSaving}
-                className="flex-1 px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-colors font-semibold disabled:opacity-70"
+                className="flex-1 px-4 py-3 bg-primary hover:brightness-110 text-white rounded-xl transition-colors font-semibold disabled:opacity-70"
               >
                 {isSaving ? 'A guardar...' : 'Guardar'}
               </button>
@@ -505,7 +505,7 @@ export default function SimulacaoPage() {
             <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
               <div className="min-w-0 pr-2">
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-                  <Eye className="w-5 h-5 text-indigo-500 shrink-0" /> {viewingSimulation.name}
+                  <Eye className="w-5 h-5 text-primary shrink-0" /> {viewingSimulation.name}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Guardada a {new Date(viewingSimulation.created_at).toLocaleDateString('pt-PT')}</p>
               </div>
@@ -534,9 +534,9 @@ export default function SimulacaoPage() {
                         <p className="text-xs text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider mb-0 sm:mb-1">Despesas</p>
                         <p className="text-base sm:text-xl font-black text-rose-700 dark:text-rose-400">{formatCurrency(tExp)}</p>
                       </div>
-                      <div className={`p-3 sm:p-4 rounded-xl border flex sm:flex-col justify-between sm:justify-center items-center text-left sm:text-center ${sBal >= 0 ? 'bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-200/60 dark:border-indigo-800/40' : 'bg-orange-50/80 dark:bg-orange-950/30 border-orange-200/60 dark:border-orange-800/40'}`}>
-                        <p className={`text-xs font-bold uppercase tracking-wider mb-0 sm:mb-1 ${sBal >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-orange-600 dark:text-orange-400'}`}>Saldo</p>
-                        <p className={`text-base sm:text-xl font-black ${sBal >= 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-orange-700 dark:text-orange-400'}`}>{formatCurrency(sBal)}</p>
+                      <div className={`p-3 sm:p-4 rounded-xl border flex sm:flex-col justify-between sm:justify-center items-center text-left sm:text-center ${sBal >= 0 ? 'bg-primary/10 border-primary/30' : 'bg-orange-50/80 dark:bg-orange-950/30 border-orange-200/60 dark:border-orange-800/40'}`}>
+                        <p className={`text-xs font-bold uppercase tracking-wider mb-0 sm:mb-1 ${sBal >= 0 ? 'text-primary' : 'text-orange-600 dark:text-orange-400'}`}>Saldo</p>
+                        <p className={`text-base sm:text-xl font-black ${sBal >= 0 ? 'text-primary' : 'text-orange-700 dark:text-orange-400'}`}>{formatCurrency(sBal)}</p>
                       </div>
                     </div>
 
@@ -591,7 +591,7 @@ export default function SimulacaoPage() {
                   const pExpenses = JSON.parse(viewingSimulation.expenses_data);
                   exportSimulacaoToPDF(pIncomes, pExpenses);
                 }} 
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-colors text-sm font-bold shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:brightness-110 text-white rounded-xl transition-colors text-sm font-bold shadow-sm"
               >
                 <Download className="w-4 h-4" /> Exportar PDF
               </button>
