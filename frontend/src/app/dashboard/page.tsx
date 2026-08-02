@@ -312,14 +312,9 @@ export default function DashboardPage() {
                   key={i} 
                   className="card-history-item relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:-translate-y-4 hover:-rotate-[5deg] hover:z-20"
                 >
+                  {/* Subtle bottom ambient light glow on hover */}
                   <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" 
-                    style={{
-                      background: 'radial-gradient(circle at top left, var(--card-history-glow), transparent 70%)'
-                    }}
-                  />
-                  <div 
-                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-20 blur-[40px] pointer-events-none rounded-full transition-all duration-500 opacity-0 group-hover:opacity-50" 
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-20 blur-[40px] pointer-events-none rounded-full transition-all duration-500 opacity-0 group-hover:opacity-40" 
                     style={{
                       backgroundColor: 'var(--card-history-accent)'
                     }}
@@ -378,19 +373,12 @@ export default function DashboardPage() {
             {expensesByCategory.map((cat, idx) => {
               const maxAmount = expensesByCategory[0].amount;
               const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
-              const catGlow = cat.color ? `${cat.color}25` : 'var(--primary-glow)';
               
               return (
                 <div 
                   key={cat.id} 
                   className="card-expenses-item glass-card p-5 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500 cursor-pointer"
                 >
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" 
-                    style={{
-                      background: `radial-gradient(circle at top left, ${catGlow}, transparent 70%)`
-                    }}
-                  />
                   <div 
                     className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-24 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
                     style={{ backgroundColor: cat.color || 'var(--primary)' }}
