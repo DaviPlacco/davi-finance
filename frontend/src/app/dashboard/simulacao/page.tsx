@@ -20,12 +20,6 @@ type SavedSimulation = {
   created_at: string;
 };
 
-type Transaction = {
-  id: string;
-  name: string;
-  amount: number;
-};
-
 export default function SimulacaoPage() {
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Transaction[]>([]);

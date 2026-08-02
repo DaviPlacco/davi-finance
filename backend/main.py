@@ -340,11 +340,14 @@ def get_summary(
     total_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE)
     total_invested = sum(i.balance for i in investments)
     
-    # Calcular Saldo Cumulativo
+    # Calcular Saldo Cumulativo (acumulado histórico até o fim do período ou até hoje)
     if year and month:
         last_day = calendar.monthrange(year, month)[1]
-        end_of_selected_month = datetime(year, month, last_day, 23, 59, 59)
-        balance_cutoff = min(end_of_selected_month, now)
+        end_of_period = datetime(year, month, last_day, 23, 59, 59)
+        balance_cutoff = min(end_of_period, now)
+    elif year:
+        end_of_period = datetime(year, 12, 31, 23, 59, 59)
+        balance_cutoff = min(end_of_period, now)
     else:
         balance_cutoff = now
         
