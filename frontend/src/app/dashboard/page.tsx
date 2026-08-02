@@ -55,6 +55,19 @@ export default function DashboardPage() {
   }, [filterYear, filterMonth]);
 
   useEffect(() => {
+    const handleCategoriesUpdate = async () => {
+      try {
+        const catRes = await api.get("/categories");
+        setCategories(catRes.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    window.addEventListener("categories-updated", handleCategoriesUpdate);
+    return () => window.removeEventListener("categories-updated", handleCategoriesUpdate);
+  }, []);
+
+  useEffect(() => {
     // Mostrar o pop-up apenas após o login
     if (sessionStorage.getItem("showWelcome") === "true") {
       setShowWelcome(true);
@@ -340,9 +353,8 @@ export default function DashboardPage() {
 
                   {/* Hover Toast / Tooltip */}
                   <div 
-                    className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom"
+                    className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom border border-slate-200/80 dark:border-slate-800"
                     style={{
-                      borderColor: 'var(--card-history-accent)',
                       boxShadow: '0 10px 30px -5px var(--card-history-glow)'
                     }}
                   >
@@ -352,10 +364,7 @@ export default function DashboardPage() {
                     </div>
                     {/* Arrow */}
                     <div 
-                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-0 border-l-0 rotate-45" 
-                      style={{
-                        borderColor: 'var(--card-history-accent)'
-                      }}
+                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-0 border-l-0 rotate-45 border-r border-b border-slate-200/80 dark:border-slate-800" 
                     />
                   </div>
                 </div>
@@ -375,6 +384,7 @@ export default function DashboardPage() {
             {expensesByCategory.map((cat, idx) => {
               const maxAmount = expensesByCategory[0].amount;
               const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
+              const catGlow = cat.color ? `${cat.color}25` : 'var(--primary-glow)';
               
               return (
                 <div 
@@ -384,12 +394,12 @@ export default function DashboardPage() {
                   <div 
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" 
                     style={{
-                      background: 'radial-gradient(circle at top left, var(--card-expenses-glow), transparent 70%)'
+                      background: `radial-gradient(circle at top left, ${catGlow}, transparent 70%)`
                     }}
                   />
                   <div 
                     className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-24 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
-                    style={{ backgroundColor: cat.color || 'var(--card-expenses-accent)' }}
+                    style={{ backgroundColor: cat.color || 'var(--primary)' }}
                   />
                   
                   <div className="flex justify-between items-start mb-4 relative z-10">

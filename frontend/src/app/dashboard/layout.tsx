@@ -71,6 +71,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Category Colors Management in Settings
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "expense" | "income">("all");
+  const [updatingCatId, setUpdatingCatId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      api.get("/categories")
+        .then(res => setCategoriesList(res.data))
+        .catch(console.error);
+    }
+  }, [isSettingsOpen]);
+
+  const handleCategoryColorChange = async (category: any, newColor: string) => {
+    setCategoriesList(prev => prev.map(c => c.id === category.id ? { ...c, color: newColor } : c));
+    setUpdatingCatId(category.id);
+    try {
+      await api.put(`/categories/${category.id}`, {
+        name: category.name,
+        color: newColor,
+        type: category.type,
+        budget_limit: category.budget_limit
+      });
+      window.dispatchEvent(new CustomEvent("categories-updated"));
+    } catch (err) {
+      console.error("Erro ao atualizar cor da categoria", err);
+    } finally {
+      setUpdatingCatId(null);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     const token = localStorage.getItem("token");
@@ -636,15 +667,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
               )}
 
-              {/* TAB 3: PERSONALIZAR CARDS */}
+              {/* TAB 3: PERSONALIZAR CARDS & CATEGORIAS */}
               {activeSettingsTab === "cards" && (
                 <div className="space-y-6 animate-in fade-in duration-200">
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                      Cores Específicas dos Cards
+                      Personalização de Cards e Categorias
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Personaliza o brilho, bordas e destaques individuais para o Histórico e Maiores Gastos
+                      Ajusta o brilho atmosférico dos cards e personaliza a cor individual de cada categoria.
                     </p>
                   </div>
 
@@ -653,11 +684,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Wallet className="w-4 h-4 text-primary" />
-                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                          Card: Histórico de Transações
-                        </span>
+                        <div>
+                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block">
+                            Brilho do Carrossel (Últimos Movimentos)
+                          </span>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Efeito de elevação e brilho suave ao passar o cursor (sem linhas de borda)
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
                         {historyCardAccent === "default" ? "Paleta Ativa" : historyCardAccent}
                       </span>
                     </div>
@@ -697,63 +733,111 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           onChange={(e) => setHistoryCustomColor(e.target.value)}
                           className="px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 uppercase"
                         />
-                        <span className="text-xs text-slate-500">Cor personalizada do card</span>
+                        <span className="text-xs text-slate-500">Cor personalizada do brilho</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Card Maiores Gastos do Mês */}
+                  {/* Cores Individuais por Categoria */}
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-rose-500" />
-                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                          Card: Maiores Gastos / Top Categorias
-                        </span>
+                        <div>
+                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block">
+                            Cores Individuais das Categorias
+                          </span>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Cada categoria utiliza a sua cor no destaque, barra e brilho de hover nos Maiores Gastos
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500">
-                        {topExpensesCardAccent === "default" ? "Paleta Ativa" : topExpensesCardAccent}
-                      </span>
+
+                      {/* Filter tabs */}
+                      <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-900/60 p-1 rounded-lg">
+                        {(["all", "expense", "income"] as const).map((filterType) => (
+                          <button
+                            key={filterType}
+                            type="button"
+                            onClick={() => setCategoryFilter(filterType)}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                              categoryFilter === filterType
+                                ? "bg-white dark:bg-slate-800 text-primary shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            {filterType === "all" ? "Todas" : filterType === "expense" ? "Despesas" : "Receitas"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-                      {CARD_ACCENT_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setTopExpensesCardAccent(opt.id)}
-                          className={`p-2 rounded-lg text-left text-xs font-bold border transition-all flex items-center gap-2 ${
-                            topExpensesCardAccent === opt.id
-                              ? "border-primary bg-primary/10 text-primary shadow-sm"
-                              : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/40 bg-white dark:bg-slate-800"
-                          }`}
-                        >
-                          <span
-                            className="w-3 h-3 rounded-full shrink-0"
-                            style={{ backgroundColor: opt.id === 'default' ? 'var(--primary)' : opt.color }}
-                          />
-                          <span className="truncate">{opt.name}</span>
-                        </button>
-                      ))}
-                    </div>
+                    {/* Category list */}
+                    <div className="max-h-64 overflow-y-auto space-y-2 pr-1 pt-2 [scrollbar-width:thin]">
+                      {categoriesList.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-slate-400">
+                          A carregar categorias...
+                        </div>
+                      ) : (
+                        categoriesList
+                          .filter(cat => categoryFilter === "all" || cat.type === categoryFilter)
+                          .map((cat) => (
+                            <div
+                              key={cat.id}
+                              className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 gap-2.5 hover:border-slate-300 dark:hover:border-slate-600 transition-all"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div
+                                  className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs border border-white/20"
+                                  style={{ backgroundColor: cat.color }}
+                                />
+                                <span className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">
+                                  {cat.name}
+                                </span>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase shrink-0 ${
+                                  cat.type === "income" 
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                                }`}>
+                                  {cat.type === "income" ? "Receita" : "Despesa"}
+                                </span>
+                              </div>
 
-                    {topExpensesCardAccent === "custom" && (
-                      <div className="flex items-center gap-2 pt-2">
-                        <input
-                          type="color"
-                          value={topExpensesCustomColor}
-                          onChange={(e) => setTopExpensesCustomColor(e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border border-slate-300 dark:border-slate-700"
-                        />
-                        <input
-                          type="text"
-                          value={topExpensesCustomColor}
-                          onChange={(e) => setTopExpensesCustomColor(e.target.value)}
-                          className="px-3 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 uppercase"
-                        />
-                        <span className="text-xs text-slate-500">Cor personalizada do card</span>
-                      </div>
-                    )}
+                              <div className="flex items-center gap-2 self-end sm:self-auto">
+                                {/* Quick swatches */}
+                                <div className="flex items-center gap-1">
+                                  {["#ef4444", "#f97316", "#f59e0b", "#10b981", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"].map((presetHex) => (
+                                    <button
+                                      key={presetHex}
+                                      type="button"
+                                      onClick={() => handleCategoryColorChange(cat, presetHex)}
+                                      title={presetHex}
+                                      className={`w-3.5 h-3.5 rounded-full border transition-transform hover:scale-125 ${
+                                        cat.color === presetHex ? "ring-2 ring-primary scale-110 border-white" : "border-black/10"
+                                      }`}
+                                      style={{ backgroundColor: presetHex }}
+                                    />
+                                  ))}
+                                </div>
+
+                                {/* Native color picker */}
+                                <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-700">
+                                  <input
+                                    type="color"
+                                    value={cat.color || "#6366f1"}
+                                    onChange={(e) => handleCategoryColorChange(cat, e.target.value)}
+                                    className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0 p-0"
+                                    title="Escolher cor personalizada"
+                                  />
+                                  <span className="font-mono text-[11px] font-bold text-slate-500 uppercase">
+                                    {cat.color}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

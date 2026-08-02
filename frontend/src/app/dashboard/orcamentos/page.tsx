@@ -22,6 +22,14 @@ export default function OrcamentosPage() {
     fetchData();
   }, [filterYear, filterMonth]);
 
+  useEffect(() => {
+    const handleCategoriesUpdate = () => {
+      fetchData();
+    };
+    window.addEventListener("categories-updated", handleCategoriesUpdate);
+    return () => window.removeEventListener("categories-updated", handleCategoriesUpdate);
+  }, []);
+
   async function fetchData() {
     try {
       const query = new URLSearchParams();

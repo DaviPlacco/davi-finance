@@ -53,6 +53,14 @@ export default function GestaoPage() {
     fetchData();
   }, [filterYear, filterMonth, filterType, filterCategoryId]);
 
+  useEffect(() => {
+    const handleCategoriesUpdate = () => {
+      fetchData();
+    };
+    window.addEventListener("categories-updated", handleCategoriesUpdate);
+    return () => window.removeEventListener("categories-updated", handleCategoriesUpdate);
+  }, []);
+
   async function fetchData() {
     try {
       const query = new URLSearchParams();
@@ -457,12 +465,9 @@ export default function GestaoPage() {
               boxShadow: '0 10px 40px -10px var(--card-history-glow, rgba(139, 92, 246, 0.15))'
             }}
           >
-            {/* Header with custom accent border */}
+            {/* Header */}
             <div 
               className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md relative"
-              style={{
-                borderTop: '3px solid var(--card-history-accent, var(--primary))'
-              }}
             >
               <div className="flex items-center gap-3">
                 <div 
@@ -734,8 +739,7 @@ export default function GestaoPage() {
                   key={cat.id} 
                   className="glass-card p-5 relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300 border border-slate-200/80 dark:border-slate-800/80"
                   style={{
-                    boxShadow: '0 8px 30px -10px var(--card-expenses-glow, rgba(244, 63, 94, 0.15))',
-                    borderTop: idx === 0 ? '3px solid var(--card-expenses-accent, var(--primary))' : undefined
+                    boxShadow: '0 8px 30px -10px var(--card-expenses-glow, rgba(244, 63, 94, 0.15))'
                   }}
                 >
                   <div className="flex justify-between items-start mb-3 relative z-10">
