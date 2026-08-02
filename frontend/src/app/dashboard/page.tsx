@@ -259,40 +259,23 @@ export default function DashboardPage() {
       {/* Infinite Transaction Carousel */}
       {transactions.length > 0 && (
         <div className="mt-4 relative">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span 
-                className="w-2.5 h-2.5 rounded-full" 
-                style={{ backgroundColor: 'var(--card-history-accent, var(--primary))' }} 
-              />
-              Últimos Movimentos
-            </h3>
-          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Últimos Movimentos</h3>
           <div 
             className="relative w-full overflow-hidden flex pt-24 pb-20 -mt-20 -mb-12"
-            style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}
+            style={{ maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)' }}
           >
             <div className="animate-marquee flex gap-4 mt-4">
               {/* Duplicate the array twice to ensure a smooth infinite loop */}
               {[...transactions, ...transactions, ...transactions].map((t: any, i: number) => (
-                <div 
-                  key={i} 
-                  className="relative group flex-shrink-0 w-60 sm:w-64 glass-card p-4 border border-slate-200/80 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:-translate-y-3 hover:-rotate-[3deg] hover:shadow-2xl hover:z-20"
-                  style={{
-                    boxShadow: '0 8px 25px -10px var(--card-history-glow, rgba(139, 92, 246, 0.2))'
-                  }}
-                >
+                <div key={i} className="relative group flex-shrink-0 w-64 glass-card p-4 border border-slate-200/60 dark:border-slate-800 transition-all duration-500 cursor-pointer bg-white dark:bg-slate-900 hover:border-primary/50 hover:-translate-y-4 hover:-rotate-[5deg] hover:shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:z-20">
                   <div className="absolute inset-0 bg-gradient-to-br from-violet-700/0 to-indigo-900/0 group-hover:from-violet-700/10 group-hover:to-indigo-900/10 transition-colors duration-500 rounded-xl pointer-events-none" />
-                  <div 
-                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-20 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
-                    style={{ backgroundColor: 'var(--card-history-accent, var(--primary))' }}
-                  />
+                  <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-20 bg-indigo-600/0 group-hover:bg-indigo-600/40 blur-[40px] pointer-events-none rounded-full transition-colors duration-500" />
                   
                   <div className="relative z-10">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[11px] font-semibold text-slate-500">{new Date(t.date).toLocaleDateString('pt-PT')}</span>
+                      <span className="text-xs font-semibold text-slate-500">{new Date(t.date).toLocaleDateString('pt-PT')}</span>
                       <span 
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap max-w-[100px] truncate"
+                        className="text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap max-w-[100px] truncate"
                         style={{ 
                           backgroundColor: `${categories.find((c: any) => c.id === t.category_id)?.color || (t.type === 'income' ? '#10b981' : '#f43f5e')}20`, 
                           color: categories.find((c: any) => c.id === t.category_id)?.color || (t.type === 'income' ? '#047857' : '#be123c') 
@@ -302,19 +285,20 @@ export default function DashboardPage() {
                         {categories.find((c: any) => c.id === t.category_id)?.name || (t.type === 'income' ? 'Receita' : 'Despesa')}
                       </span>
                     </div>
-                    <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{t.description || '-'}</p>
-                    <p className={`font-black text-base sm:text-lg mt-1 ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{t.description}</p>
+                    <p className={`font-extrabold text-lg mt-1 ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                     </p>
                   </div>
 
                   {/* Hover Toast / Tooltip */}
-                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-xs sm:text-sm py-2.5 px-3.5 w-max max-w-[240px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom border border-slate-200 dark:border-slate-700">
-                    <div className="font-bold truncate">{t.description || 'Sem descrição'}</div>
-                    <div className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 glass-card text-slate-900 dark:text-white text-sm py-3 px-4 w-max max-w-[250px] shadow-2xl scale-95 group-hover:scale-100 origin-bottom">
+                    <div className="font-extrabold text-base">{t.description}</div>
+                    <div className="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
                       Categoria: {categories.find((c: any) => c.id === t.category_id)?.name || "Sem Categoria"}
                     </div>
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 glass-card border-t-0 border-l-0 rotate-45" />
+                    {/* Arrow */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 glass-card border-t-0 border-l-0 rotate-45" />
                   </div>
                 </div>
               ))}
@@ -326,39 +310,36 @@ export default function DashboardPage() {
       {/* Category Expenses Summary */}
       {expensesByCategory.length > 0 && (
         <div className="mt-8 space-y-4 animate-in slide-in-from-bottom-5 fade-in duration-500 delay-150">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-rose-500" /> Top Categorias de Gastos
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-rose-500" /> Top Categorias de Gastos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {expensesByCategory.map((cat, idx) => {
               const maxAmount = expensesByCategory[0].amount;
               const percent = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
               
               return (
-                <div 
-                  key={cat.id} 
-                  className="glass-card p-5 relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300 border border-slate-200/80 dark:border-slate-800"
-                  style={{
-                    boxShadow: '0 8px 30px -10px var(--card-expenses-glow, rgba(244, 63, 94, 0.15))',
-                    borderTop: idx === 0 ? '3px solid var(--card-expenses-accent, var(--primary))' : undefined
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-3 relative z-10">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate" title={cat.name}>
+                <div key={cat.id} className="glass-card p-5 relative overflow-hidden group hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] hover:border-primary/50 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-700/0 to-indigo-900/0 group-hover:from-violet-700/10 group-hover:to-indigo-900/10 transition-colors duration-500 rounded-xl pointer-events-none" />
+                  <div 
+                    className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-24 blur-[40px] pointer-events-none rounded-full transition-opacity duration-500 opacity-0 group-hover:opacity-40" 
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={cat.name}>
                         {cat.name}
                       </span>
                     </div>
-                    <span className="font-extrabold text-sm text-rose-600 dark:text-rose-400 shrink-0">
+                    <span className="font-bold text-rose-600 dark:text-rose-500">
                       -{formatCurrency(cat.amount)}
                     </span>
                   </div>
                   
                   {/* Progress bar background */}
-                  <div className="w-full bg-slate-100 dark:bg-slate-800/80 h-2 rounded-full overflow-hidden relative z-10">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-2 rounded-full overflow-hidden relative z-10">
                     <div 
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ 
@@ -369,7 +350,7 @@ export default function DashboardPage() {
                   </div>
                   
                   {/* Ranking Number */}
-                  <div className="absolute -right-2 -bottom-4 text-6xl font-black text-slate-900/5 dark:text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-300">
+                  <div className="absolute -right-3 -bottom-5 text-7xl font-black text-slate-900/5 dark:text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                     #{idx + 1}
                   </div>
                 </div>
