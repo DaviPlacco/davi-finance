@@ -169,3 +169,22 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+
+/* Card Custom Accents & Dynamic Hover Effects */
+.card-history-item {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-history-item:hover {
+  border-color: var(--card-history-accent) !important;
+  box-shadow: 0 0 40px var(--card-history-glow) !important;
+}
+
+.card-expenses-item {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-expenses-item:hover {
+  border-color: var(--card-expenses-accent) !important;
+  box-shadow: 0 0 35px var(--card-expenses-glow) !important;
+}
