@@ -89,21 +89,30 @@ export default function PrevisaoPage() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 p-4 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-          <p className="font-bold text-white mb-2">{label}</p>
-          <div className="space-y-1">
-            <p className="text-primary font-semibold text-sm">
-              Total Acumulado: {formatCurrency(payload[0].value)}
-            </p>
+        <div className="glass-card bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 p-4 rounded-xl shadow-xl dark:shadow-[0_12px_36px_rgba(0,0,0,0.5)] min-w-[220px]">
+          <p className="font-bold text-slate-900 dark:text-white mb-2.5 text-sm">{label}</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-slate-600 dark:text-slate-300 font-medium">Total Acumulado:</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400" style={{ color: primaryColor }}>
+                {formatCurrency(payload[0].value)}
+              </span>
+            </div>
             {payload[1] && (
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
-                Total Investido: {formatCurrency(payload[1].value)}
-              </p>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Total Investido:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {formatCurrency(payload[1].value)}
+                </span>
+              </div>
             )}
             {payload[1] && (
-              <p className="text-emerald-500 font-medium text-sm pt-1 border-t border-slate-100 dark:border-slate-800 mt-1">
-                Juros Compostos: {formatCurrency(payload[0].value - payload[1].value)}
-              </p>
+              <div className="flex items-center justify-between gap-3 text-sm pt-2 border-t border-slate-100 dark:border-slate-800/80 mt-2">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Juros Compostos:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(payload[0].value - payload[1].value)}
+                </span>
+              </div>
             )}
           </div>
         </div>
