@@ -28,6 +28,16 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN name VARCHAR(255)"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN profile_image TEXT"))
+            conn.commit()
+        except Exception:
+            pass
 
 run_migrations()
 
@@ -80,6 +90,21 @@ def login_for_access_token(
 
 @app.get("/users/me", response_model=schemas.UserResponse)
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
+    return current_user
+
+@app.put("/users/me/profile", response_model=schemas.UserResponse)
+def update_user_profile(
+    update_data: schemas.UserUpdateProfile,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    if update_data.name is not None:
+        trimmed = update_data.name.strip()
+        current_user.name = trimmed if trimmed else None
+    if update_data.profile_image is not None:
+        current_user.profile_image = update_data.profile_image
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 @app.put("/users/me/profile-image", response_model=schemas.UserResponse)

@@ -45,6 +45,15 @@ export default function DashboardPage() {
   const [username, setUsername] = useState("Utilizador");
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
+  const getInitials = (nameStr: string) => {
+    if (!nameStr) return "U";
+    const parts = nameStr.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return nameStr.charAt(0).toUpperCase();
+  };
+
   // Chart Type Switches
   const [cashFlowChartType, setCashFlowChartType] = useState<"bar" | "line" | "area">("bar");
   const [wealthChartType, setWealthChartType] = useState<"line" | "area" | "bar">("line");
@@ -94,11 +103,19 @@ export default function DashboardPage() {
     const handleUpdates = async () => {
       fetchData();
     };
+    const handleUserUpdate = (e: any) => {
+      const newName = e.detail?.name || localStorage.getItem("username");
+      if (newName) {
+        setUsername(newName);
+      }
+    };
     window.addEventListener("categories-updated", handleUpdates);
     window.addEventListener("groups-updated", handleUpdates);
+    window.addEventListener("user-updated", handleUserUpdate);
     return () => {
       window.removeEventListener("categories-updated", handleUpdates);
       window.removeEventListener("groups-updated", handleUpdates);
+      window.removeEventListener("user-updated", handleUserUpdate);
     };
   }, []);
 
@@ -113,6 +130,12 @@ export default function DashboardPage() {
       setUsername(storedName.charAt(0).toUpperCase() + storedName.slice(1));
     }
     api.get("/users/me").then(res => {
+      if (res.data.name && res.data.name.trim()) {
+        setUsername(res.data.name.trim());
+        localStorage.setItem("username", res.data.name.trim());
+      } else if (res.data.username && !storedName) {
+        setUsername(res.data.username);
+      }
       if (res.data.profile_image) {
         setProfileImage(res.data.profile_image);
       } else {
@@ -881,7 +904,7 @@ export default function DashboardPage() {
                         backgroundImage: 'linear-gradient(135deg, var(--primary), var(--secondary))'
                       }}
                     >
-                      {username.charAt(0).toUpperCase()}
+                      {getInitials(username)}
                     </span>
                   )}
                 </div>
