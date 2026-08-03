@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import extract
+from sqlalchemy import extract, text
 from datetime import timedelta, datetime
 import calendar
 import random
@@ -14,7 +14,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-models.Base.metadata.create_all(bind=engine)
+# Migrations & Table Creation
+def run_migrations():
+    models.Base.metadata.create_all(bind=engine)
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN receipt_image TEXT"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE categories ADD COLUMN group_id INTEGER"))
+            conn.commit()
+        except Exception:
+            pass
+
+run_migrations()
 
 app = FastAPI(title="Davi Finance API")
 
@@ -26,14 +41,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 from fastapi import Request
-
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    limiter = Limiter(key_func=get_remote_address)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+except ImportError:
+    class DummyLimiter:
+        def limit(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+    limiter = DummyLimiter()
 
 # ----------------- AUTH -----------------
 @app.post("/token", response_model=schemas.Token)
@@ -96,6 +118,102 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     
     return new_user
 
+# ----------------- CATEGORY GROUPS -----------------
+@app.get("/category-groups", response_model=List[schemas.CategoryGroupResponse])
+def read_category_groups(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    groups = db.query(models.CategoryGroup).filter(models.CategoryGroup.user_id == current_user.id).all()
+    res = []
+    for g in groups:
+        cat_ids = [c.id for c in g.categories]
+        res.append(schemas.CategoryGroupResponse(
+            id=g.id,
+            user_id=g.user_id,
+            name=g.name,
+            color=g.color,
+            type=g.type,
+            created_at=g.created_at,
+            category_ids=cat_ids
+        ))
+    return res
+
+@app.post("/category-groups", response_model=schemas.CategoryGroupResponse)
+def create_category_group(group_data: schemas.CategoryGroupCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_group = models.CategoryGroup(
+        name=group_data.name,
+        color=group_data.color,
+        type=group_data.type,
+        user_id=current_user.id
+    )
+    db.add(db_group)
+    db.commit()
+    db.refresh(db_group)
+    
+    if group_data.category_ids:
+        for cat_id in group_data.category_ids:
+            cat = db.query(models.Category).filter(models.Category.id == cat_id, models.Category.user_id == current_user.id).first()
+            if cat:
+                cat.group_id = db_group.id
+        db.commit()
+    
+    return schemas.CategoryGroupResponse(
+        id=db_group.id,
+        user_id=db_group.user_id,
+        name=db_group.name,
+        color=db_group.color,
+        type=db_group.type,
+        created_at=db_group.created_at,
+        category_ids=group_data.category_ids or []
+    )
+
+@app.put("/category-groups/{group_id}", response_model=schemas.CategoryGroupResponse)
+def update_category_group(group_id: int, group_data: schemas.CategoryGroupCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_group = db.query(models.CategoryGroup).filter(models.CategoryGroup.id == group_id, models.CategoryGroup.user_id == current_user.id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Category group not found")
+    
+    db_group.name = group_data.name
+    db_group.color = group_data.color
+    db_group.type = group_data.type
+    
+    # Reset old associations
+    existing_cats = db.query(models.Category).filter(models.Category.group_id == group_id, models.Category.user_id == current_user.id).all()
+    for c in existing_cats:
+        c.group_id = None
+    
+    # Assign new associations
+    if group_data.category_ids:
+        for cat_id in group_data.category_ids:
+            cat = db.query(models.Category).filter(models.Category.id == cat_id, models.Category.user_id == current_user.id).first()
+            if cat:
+                cat.group_id = db_group.id
+                
+    db.commit()
+    db.refresh(db_group)
+    
+    return schemas.CategoryGroupResponse(
+        id=db_group.id,
+        user_id=db_group.user_id,
+        name=db_group.name,
+        color=db_group.color,
+        type=db_group.type,
+        created_at=db_group.created_at,
+        category_ids=group_data.category_ids or []
+    )
+
+@app.delete("/category-groups/{group_id}")
+def delete_category_group(group_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_group = db.query(models.CategoryGroup).filter(models.CategoryGroup.id == group_id, models.CategoryGroup.user_id == current_user.id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Category group not found")
+    
+    cats = db.query(models.Category).filter(models.Category.group_id == group_id, models.Category.user_id == current_user.id).all()
+    for c in cats:
+        c.group_id = None
+        
+    db.delete(db_group)
+    db.commit()
+    return {"message": "Category group deleted"}
+
 # ----------------- CATEGORIES -----------------
 @app.post("/categories", response_model=schemas.CategoryResponse)
 def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
@@ -103,11 +221,35 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
-    return db_category
+    group_name = db_category.group.name if db_category.group else None
+    return schemas.CategoryResponse(
+        id=db_category.id,
+        user_id=db_category.user_id,
+        name=db_category.name,
+        color=db_category.color,
+        type=db_category.type,
+        budget_limit=db_category.budget_limit,
+        group_id=db_category.group_id,
+        group_name=group_name
+    )
 
 @app.get("/categories", response_model=list[schemas.CategoryResponse])
 def read_categories(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
-    return db.query(models.Category).filter(models.Category.user_id == current_user.id).all()
+    categories = db.query(models.Category).filter(models.Category.user_id == current_user.id).all()
+    res = []
+    for c in categories:
+        group_name = c.group.name if c.group else None
+        res.append(schemas.CategoryResponse(
+            id=c.id,
+            user_id=c.user_id,
+            name=c.name,
+            color=c.color,
+            type=c.type,
+            budget_limit=c.budget_limit,
+            group_id=c.group_id,
+            group_name=group_name
+        ))
+    return res
 
 @app.delete("/categories/{category_id}")
 def delete_category(category_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
@@ -129,12 +271,21 @@ def update_category(category_id: int, category_update: schemas.CategoryCreate, d
         
     db.commit()
     db.refresh(category)
-    return category
+    group_name = category.group.name if category.group else None
+    return schemas.CategoryResponse(
+        id=category.id,
+        user_id=category.user_id,
+        name=category.name,
+        color=category.color,
+        type=category.type,
+        budget_limit=category.budget_limit,
+        group_id=category.group_id,
+        group_name=group_name
+    )
 
 # ----------------- TRANSACTIONS -----------------
 @app.post("/transactions", response_model=schemas.TransactionResponse)
 def create_transaction(transaction: schemas.TransactionCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
-    # Verify category belongs to user
     category = db.query(models.Category).filter(models.Category.id == transaction.category_id, models.Category.user_id == current_user.id).first()
     if not category:
         raise HTTPException(status_code=400, detail="Invalid category_id")
@@ -257,7 +408,6 @@ def get_investment_history(
     timeline = []
     current_total = 0.0
     
-    # O primeiro ponto do gráfico começa no dia anterior ao primeiro log com saldo 0
     if logs:
         first_date = logs[0].date - timedelta(days=1)
         timeline.append({
@@ -309,7 +459,7 @@ def get_investment_history(
 
     return chart_data
 
-# Get summary
+# ----------------- SUMMARY -----------------
 @app.get("/summary")
 def get_summary(
     year: Optional[int] = None,
@@ -319,12 +469,10 @@ def get_summary(
 ):
     now = datetime.now()
     
-    # Obter todas as transações (para o saldo cumulativo)
     query = db.query(models.Transaction).filter(models.Transaction.user_id == current_user.id)
     all_transactions = query.all()
     investments = db.query(models.Investment).filter(models.Investment.user_id == current_user.id).all()
     
-    # Filtrar transações para o mês selecionado
     selected_transactions = []
     for t in all_transactions:
         if year and t.date.year != year:
@@ -333,14 +481,12 @@ def get_summary(
             continue
         selected_transactions.append(t)
         
-    # As receitas e despesas do mês só contabilizam transações "efetivas" (não futuras)
     effective_selected_transactions = [t for t in selected_transactions if t.date <= now]
     
     total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME)
     total_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE)
     total_invested = sum(i.balance for i in investments)
     
-    # Calcular Saldo Cumulativo (acumulado histórico até o fim do período ou até hoje)
     if year and month:
         last_day = calendar.monthrange(year, month)[1]
         end_of_period = datetime(year, month, last_day, 23, 59, 59)
@@ -357,7 +503,6 @@ def get_summary(
     
     chart_data = []
     
-    # Group chart data (apenas transações efetivas)
     if year and month:
         num_days = calendar.monthrange(year, month)[1]
         for day in range(1, num_days + 1):
@@ -366,7 +511,9 @@ def get_summary(
             chart_data.append({
                 "name": str(day),
                 "receitas": daily_income,
-                "despesas": daily_expense
+                "despesas": daily_expense,
+                "saldo": round(daily_income - daily_expense, 2),
+                "poupanca": round(max(0.0, daily_income - daily_expense), 2)
             })
     else:
         months_abbr = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
@@ -376,7 +523,9 @@ def get_summary(
             chart_data.append({
                 "name": months_abbr[m-1],
                 "receitas": monthly_income,
-                "despesas": monthly_expense
+                "despesas": monthly_expense,
+                "saldo": round(monthly_income - monthly_expense, 2),
+                "poupanca": round(max(0.0, monthly_income - monthly_expense), 2)
             })
 
     return {
@@ -418,6 +567,7 @@ def get_reports_history(db: Session = Depends(get_db), current_user: models.User
     history_list.sort(key=lambda x: (x["year"], x["month"]), reverse=True)
     return history_list
 
+# ----------------- SIMULATIONS -----------------
 @app.post("/simulations", response_model=schemas.SimulationResponse)
 def create_simulation(sim: schemas.SimulationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     db_sim = models.Simulation(

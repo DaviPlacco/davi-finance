@@ -24,12 +24,30 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+# Category Group Schemas
+class CategoryGroupBase(BaseModel):
+    name: str
+    color: str = "#6366f1"
+    type: CategoryType
+
+class CategoryGroupCreate(CategoryGroupBase):
+    category_ids: Optional[List[int]] = []
+
+class CategoryGroupResponse(CategoryGroupBase):
+    id: int
+    user_id: int
+    category_ids: Optional[List[int]] = []
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
 # Category Schemas
 class CategoryBase(BaseModel):
     name: str
     color: str
     type: CategoryType
     budget_limit: Optional[float] = None
+    group_id: Optional[int] = None
 
 class CategoryCreate(CategoryBase):
     pass
@@ -37,6 +55,7 @@ class CategoryCreate(CategoryBase):
 class CategoryResponse(CategoryBase):
     id: int
     user_id: int
+    group_name: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -47,6 +66,7 @@ class TransactionBase(BaseModel):
     date: datetime
     description: Optional[str] = None
     type: TransactionType
+    receipt_image: Optional[str] = None
 
 class TransactionCreate(TransactionBase):
     pass

@@ -27,9 +27,23 @@ class User(Base):
     profile_image = Column(Text(length=4294967295), nullable=True)
 
     categories = relationship("Category", back_populates="user", cascade="all, delete-orphan")
+    category_groups = relationship("CategoryGroup", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
     investments = relationship("Investment", back_populates="user", cascade="all, delete-orphan")
     simulations = relationship("Simulation", back_populates="user", cascade="all, delete-orphan")
+
+class CategoryGroup(Base):
+    __tablename__ = "category_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    color = Column(String(50), default="#6366f1")
+    type = Column(Enum(CategoryType), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="category_groups")
+    categories = relationship("Category", back_populates="group")
 
 class Category(Base):
     __tablename__ = "categories"
@@ -40,8 +54,10 @@ class Category(Base):
     color = Column(String(50), default="#3b82f6")
     type = Column(Enum(CategoryType), nullable=False)
     budget_limit = Column(Float, nullable=True)
+    group_id = Column(Integer, ForeignKey("category_groups.id", ondelete="SET NULL"), nullable=True)
     
     user = relationship("User", back_populates="categories")
+    group = relationship("CategoryGroup", back_populates="categories")
     transactions = relationship("Transaction", back_populates="category")
 
 class Transaction(Base):
@@ -54,6 +70,7 @@ class Transaction(Base):
     date = Column(DateTime, nullable=False)
     description = Column(String(500))
     type = Column(Enum(TransactionType), nullable=False)
+    receipt_image = Column(Text(length=4294967295), nullable=True)
 
     user = relationship("User", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
