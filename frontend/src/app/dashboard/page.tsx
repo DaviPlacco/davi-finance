@@ -565,7 +565,7 @@ export default function DashboardPage() {
                   <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)', color: '#f8fafc' }} itemStyle={{ color: '#e2e8f0', fontWeight: 500 }} />
                   <Line 
                     type="monotone" 
-                    dataKey="receitas" 
+                    dataKey="saldo" 
                     name="Património"
                     stroke={primaryColor || "#8b5cf6"} 
                     strokeWidth={3} 
@@ -587,7 +587,7 @@ export default function DashboardPage() {
                   <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', color: '#f8fafc' }} itemStyle={{ color: '#e2e8f0', fontWeight: 500 }} />
                   <Area 
                     type="monotone" 
-                    dataKey="receitas" 
+                    dataKey="saldo" 
                     name="Património"
                     stroke={primaryColor || "#8b5cf6"} 
                     fillOpacity={1} 
@@ -602,7 +602,7 @@ export default function DashboardPage() {
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={yAxisTickFormatter} width={45} />
                   <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', color: '#f8fafc' }} itemStyle={{ color: '#e2e8f0', fontWeight: 500 }} />
                   <Bar 
-                    dataKey="receitas" 
+                    dataKey="saldo" 
                     name="Património"
                     fill={primaryColor || "#8b5cf6"} 
                     radius={[6, 6, 0, 0]} 
