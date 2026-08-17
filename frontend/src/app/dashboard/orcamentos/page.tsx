@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMonthFilter } from "@/hooks/useMonthFilter";
 import { api } from "@/lib/api";
 import { PieChart, TrendingDown, AlertTriangle, CheckCircle2, Trash2, X, PiggyBank } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
@@ -13,10 +14,8 @@ export default function OrcamentosPage() {
 
 
   const currentYear = new Date().getFullYear().toString();
-  const currentMonth = (new Date().getMonth() + 1).toString();
-  
   const [filterYear, setFilterYear] = useState(currentYear);
-  const [filterMonth, setFilterMonth] = useState(currentMonth);
+  const [filterMonth, setFilterMonth] = useMonthFilter('current');
 
   useEffect(() => {
     fetchData();

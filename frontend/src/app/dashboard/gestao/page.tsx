@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useMonthFilter } from "@/hooks/useMonthFilter";
 import { api } from "@/lib/api";
 import { 
   Plus, 
@@ -52,9 +53,12 @@ export default function GestaoPage() {
 
   // Filter state
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
-  const [filterMonth, setFilterMonth] = useState("");
+  const [filterMonth, setFilterMonth] = useMonthFilter('all');
   const [filterType, setFilterType] = useState("");
   const [filterCategoryId, setFilterCategoryId] = useState("");
+
+  const [selectedTransactions, setSelectedTransactions] = useState<number[]>([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -181,18 +185,52 @@ export default function GestaoPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selectedTransactions.map(id => api.delete(`/transactions/${id}`)));
+      setSelectedTransactions([]);
+      setShowBulkDeleteModal(false);
+      fetchData();
+      toast.error("Transações eliminadas com sucesso.");
+    } catch (err) {
+      toast.error("Erro ao eliminar transações.");
+    }
+  };
+
   const handleDeleteCategory = async (id: string | number) => {
-    if (confirm("Tens a certeza que queres eliminar esta categoria?")) {
-      try {
-        await api.delete(`/categories/${id}`);
-        fetchData();
-        if (categoryId === id.toString()) setCategoryId("");
-        if (filterCategoryId === id.toString()) setFilterCategoryId("");
-        toast.error("Categoria eliminada com sucesso.");
-      } catch (err) {
-        console.error("Failed to delete category");
-        toast.error("Erro ao eliminar a categoria.");
-      }
+    const cat = categories.find(c => c.id.toString() === id.toString());
+    setCatToDelete(cat);
+    setShowDeleteCatModal(true);
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!catToDelete) return;
+    try {
+      await api.delete(`/categories/${catToDelete.id}`);
+      fetchData();
+      if (categoryId === catToDelete.id.toString()) setCategoryId("");
+      if (filterCategoryId === catToDelete.id.toString()) setFilterCategoryId("");
+      toast.error("Categoria eliminada com sucesso.");
+      setShowDeleteCatModal(false);
+      setCatToDelete(null);
+    } catch (err) {
+      toast.error("Erro ao eliminar a categoria.");
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTransactions.length === paginatedTransactions.length && paginatedTransactions.length > 0) {
+      setSelectedTransactions([]);
+    } else {
+      setSelectedTransactions(paginatedTransactions.map((t: any) => t.id));
+    }
+  };
+
+  const toggleSelectTransaction = (id: number) => {
+    if (selectedTransactions.includes(id)) {
+      setSelectedTransactions(selectedTransactions.filter(tid => tid !== id));
+    } else {
+      setSelectedTransactions([...selectedTransactions, id]);
     }
   };
 
@@ -584,6 +622,14 @@ export default function GestaoPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800">
+                    <th className="p-4 w-12 text-center">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-primary focus:ring-primary/30 w-4 h-4 cursor-pointer"
+                        checked={selectedTransactions.length === paginatedTransactions.length && paginatedTransactions.length > 0}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data</th>
                     <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Descrição</th>
                     <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Categoria</th>
@@ -595,7 +641,7 @@ export default function GestaoPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {paginatedTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-16 text-center text-slate-500 dark:text-slate-400">
+                      <td colSpan={7} className="py-16 text-center text-slate-500 dark:text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Receipt className="w-10 h-10 text-slate-300 dark:text-slate-700" />
                           <p className="font-semibold text-sm">Não existem transações para os filtros selecionados.</p>
@@ -611,8 +657,18 @@ export default function GestaoPage() {
                       return (
                         <tr 
                           key={t.id} 
-                          className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group"
+                          className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+                          onClick={() => toggleSelectTransaction(t.id)}
                         >
+                          <td className="p-4 text-center">
+                            <input 
+                              type="checkbox" 
+                              className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-primary focus:ring-primary/30 w-4 h-4 cursor-pointer"
+                              checked={selectedTransactions.includes(t.id)}
+                              onChange={() => toggleSelectTransaction(t.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </td>
                           <td className="p-4 text-slate-600 dark:text-slate-300 text-sm font-medium whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <span>{formatDate(t.date)}</span>
@@ -675,8 +731,20 @@ export default function GestaoPage() {
             </div>
 
             {/* MOBILE CARD LIST VIEW (SM / XS) */}
-            <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
-              {paginatedTransactions.length === 0 ? (
+            <div className="block md:hidden">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-primary focus:ring-primary/30 w-4 h-4"
+                    checked={selectedTransactions.length === paginatedTransactions.length && paginatedTransactions.length > 0}
+                    onChange={toggleSelectAll}
+                  />
+                  Selecionar Todos
+                </label>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                {paginatedTransactions.length === 0 ? (
                 <div className="py-12 px-4 text-center text-slate-500 dark:text-slate-400">
                   <Receipt className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-700 mb-2" />
                   <p className="font-semibold text-sm">Sem registos encontrados</p>
@@ -689,8 +757,18 @@ export default function GestaoPage() {
                   return (
                     <div 
                       key={t.id} 
-                      className="p-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors flex items-center justify-between gap-3"
+                      className="p-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors flex items-start justify-between gap-3 cursor-pointer"
+                      onClick={() => toggleSelectTransaction(t.id)}
                     >
+                      <div className="mt-1 shrink-0">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-primary focus:ring-primary/30 w-4 h-4 cursor-pointer"
+                          checked={selectedTransactions.includes(t.id)}
+                          onChange={() => toggleSelectTransaction(t.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                       <div className="flex-1 min-w-0 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
