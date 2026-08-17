@@ -1020,6 +1020,62 @@ export default function GestaoPage() {
           </div>
         </div>
       )}
+
+      {/* FLOATING ACTION BAR FOR BULK SELECTION */}
+      {selectedTransactions.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 w-full max-w-sm sm:max-w-md px-4">
+          <div className="glass-panel border border-slate-200/50 dark:border-slate-800 rounded-full p-2.5 shadow-2xl flex items-center justify-between gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl">
+            <div className="flex items-center gap-2 px-3">
+              <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                {selectedTransactions.length}
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap hidden sm:block">
+                Selecionado(s)
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBulkDeleteModal(true)}
+                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/20 text-xs px-4 py-2 rounded-full font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Excluir</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE EXCLUSÃO EM MASSA */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full border border-rose-500/30 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-rose-500" />
+              <span>Excluir {selectedTransactions.length} Transações</span>
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Tem a certeza de que deseja excluir permanentemente as {selectedTransactions.length} transações selecionadas? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => setShowBulkDeleteModal(false)}
+                className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="px-4 py-2 text-sm font-bold bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-colors shadow-lg shadow-rose-500/20 flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
