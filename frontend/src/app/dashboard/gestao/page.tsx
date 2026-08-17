@@ -824,6 +824,7 @@ export default function GestaoPage() {
                 })
               )}
             </div>
+            </div>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
