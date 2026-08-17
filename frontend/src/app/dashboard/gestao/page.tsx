@@ -384,7 +384,7 @@ export default function GestaoPage() {
                 />
                 {new Date(date) > new Date() && (
                   <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Esta transação ficará "Em Espera" até à data indicada.
+                    <Clock className="w-3 h-3" /> Esta transação ficará &quot;Em Espera&quot; até à data indicada.
                   </p>
                 )}
               </div>
