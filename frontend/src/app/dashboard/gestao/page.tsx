@@ -1023,7 +1023,7 @@ export default function GestaoPage() {
 
       {/* FLOATING ACTION BAR FOR BULK SELECTION */}
       {selectedTransactions.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 w-full max-w-sm sm:max-w-md px-4">
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 w-full max-w-sm sm:max-w-md px-4">
           <div className="glass-panel border border-slate-200/50 dark:border-slate-800 rounded-full p-2.5 shadow-2xl flex items-center justify-between gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl">
             <div className="flex items-center gap-2 px-3">
               <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
