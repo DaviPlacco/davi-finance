@@ -1,18 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
+// All API requests now pass through the Next.js API route proxy
+// which automatically attaches the secure HttpOnly cookie.
 export const api = axios.create({
-  baseURL: API_URL,
-});
-
-// Interceptor to add auth token to requests
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
+  baseURL: '/api/proxy',
 });

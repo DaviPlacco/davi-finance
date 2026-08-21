@@ -233,8 +233,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const isAuth = localStorage.getItem("isAuthenticated");
+    if (!isAuth) {
       router.push("/");
     } else {
       setLoading(false);
@@ -270,8 +270,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       let timeoutId: NodeJS.Timeout;
       const resetTimer = () => {
         clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          localStorage.removeItem("token");
+        timeoutId = setTimeout(async () => {
+          try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+          } catch(e) {}
+          localStorage.removeItem("isAuthenticated");
           localStorage.removeItem("username");
           router.push("/");
         }, 900 * 1000); // 15 minutes
@@ -293,8 +296,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch(e) {}
+    localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("username");
     router.push("/");
   };

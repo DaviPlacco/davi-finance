@@ -26,11 +26,17 @@ export default function LoginPage() {
       formData.append("username", username);
       formData.append("password", password);
 
-      const response = await api.post("/token", formData, {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
       });
+      
+      if (!res.ok) {
+        throw new Error("Credenciais inválidas");
+      }
 
-      localStorage.setItem("token", response.data.access_token);
+      localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("username", username);
       sessionStorage.setItem("showWelcome", "true");
       toast.success(isRegistering ? "Conta criada com sucesso!" : `Bem-vindo de volta, ${username}!`);
