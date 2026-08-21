@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
 
     if (response.ok && data.access_token) {
-      cookies().set({
+      (await cookies()).set({
         name: 'token',
         value: data.access_token,
         httpOnly: true,

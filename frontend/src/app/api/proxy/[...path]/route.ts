@@ -9,7 +9,8 @@ async function handleProxy(req: NextRequest, { params }: { params: { path: strin
   const searchParams = url.searchParams.toString();
   const targetUrl = `${API_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
   
-  const token = cookies().get('token')?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
   
   const headers = new Headers(req.headers);
   headers.delete('host');
