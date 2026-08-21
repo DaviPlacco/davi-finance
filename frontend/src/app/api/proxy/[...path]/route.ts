@@ -45,7 +45,11 @@ async function handleProxy(req: NextRequest, pathArray: string[]) {
       });
     }
   } catch (error) {
-    return new NextResponse(JSON.stringify({ error: 'Gateway Timeout / Backend indisponível' }), { status: 502 });
+    console.error('Proxy Error:', error);
+    return new NextResponse(JSON.stringify({ 
+      error: 'Gateway Timeout / Backend indisponível',
+      details: error instanceof Error ? error.message : String(error)
+    }), { status: 502, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
