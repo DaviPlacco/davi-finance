@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-async function handleProxy(req: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path.join('/');
+async function handleProxy(req: NextRequest, pathArray: string[]) {
+  const path = pathArray.join('/');
   const url = new URL(req.url);
   const searchParams = url.searchParams.toString();
   const targetUrl = `${API_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
@@ -45,8 +45,27 @@ async function handleProxy(req: NextRequest, { params }: { params: { path: strin
   }
 }
 
-export const GET = handleProxy;
-export const POST = handleProxy;
-export const PUT = handleProxy;
-export const DELETE = handleProxy;
-export const PATCH = handleProxy;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  return handleProxy(req, resolvedParams.path);
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  return handleProxy(req, resolvedParams.path);
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  return handleProxy(req, resolvedParams.path);
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  return handleProxy(req, resolvedParams.path);
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  return handleProxy(req, resolvedParams.path);
+}
