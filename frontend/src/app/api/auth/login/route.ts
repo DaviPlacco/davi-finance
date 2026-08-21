@@ -30,7 +30,12 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    return NextResponse.json({ error: 'Erro no servidor de autenticação' }, { status: 500 });
+  } catch (error: any) {
+    console.error('ERRO NO LOGIN (BFF):', error);
+    return NextResponse.json({ 
+      error: 'Erro no servidor de autenticação',
+      detalhe: error?.message || String(error),
+      apiUrl: API_URL
+    }, { status: 500 });
   }
 }
