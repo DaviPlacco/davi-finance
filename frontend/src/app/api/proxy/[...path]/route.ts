@@ -32,15 +32,18 @@ async function handleProxy(req: NextRequest, pathArray: string[]) {
       redirect: 'manual',
     });
 
-    const responseHeaders = new Headers(response.headers);
-    responseHeaders.delete('content-encoding');
-    responseHeaders.delete('content-length');
+    const contentType = response.headers.get('content-type');
     
-    return new NextResponse(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      return NextResponse.json(data, { status: response.status });
+    } else {
+      const text = await response.text();
+      return new NextResponse(text, { 
+        status: response.status,
+        headers: { 'Content-Type': contentType || 'text/plain' }
+      });
+    }
   } catch (error) {
     return new NextResponse(JSON.stringify({ error: 'Gateway Timeout / Backend indisponível' }), { status: 502 });
   }
