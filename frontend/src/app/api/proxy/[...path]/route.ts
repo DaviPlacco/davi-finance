@@ -12,8 +12,12 @@ async function handleProxy(req: NextRequest, pathArray: string[]) {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
   
-  const headers = new Headers(req.headers);
-  headers.delete('host');
+  const headers = new Headers();
+  
+  const incomingContentType = req.headers.get('content-type');
+  if (incomingContentType) {
+    headers.set('content-type', incomingContentType);
+  }
   
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
