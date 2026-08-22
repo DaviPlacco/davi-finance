@@ -625,10 +625,10 @@ export default function DashboardPage() {
         <div className="mt-4 relative">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Últimos Movimentos</h3>
           <div 
-            className="relative w-full overflow-hidden flex pt-24 pb-20 -mt-20 -mb-12"
+            className="relative w-full overflow-hidden pt-24 pb-20 -mt-20 -mb-12"
             style={{ maskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)' }}
           >
-            <div className="animate-marquee flex gap-4 mt-4" style={{ animationDuration: `${Math.max(transactions.length * 4, 30)}s` }}>
+            <div className="animate-marquee flex gap-4 mt-4 shrink-0 w-max" style={{ animationDuration: `${Math.max(transactions.length * 4, 30)}s` }}>
               {Array(Math.max(1, Math.ceil(10 / transactions.length)) * 2).fill(transactions).flat().map((t: any, i: number) => (
                 <div 
                   key={i} 
