@@ -40,6 +40,7 @@ import {
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { SmartAdvisorToastManager } from "@/components/SmartAdvisorToast";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -1360,6 +1361,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       )}
+
+      {/* 💡 Gestor de Toasts Inteligentes (de 10 em 10 min com cruzamento de dados) */}
+      <SmartAdvisorToastManager />
     </div>
   );
 }
