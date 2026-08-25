@@ -669,32 +669,32 @@ export default function InvestimentosPage() {
       {/* SECÇÃO 2: SISTEMA DE METAS MENSAIS INTELIGENTES (CRUZAMENTO DE DADOS) */}
       {/* ========================================================================= */}
       <div className="pt-8 border-t border-slate-200/80 dark:border-slate-800/80 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
-                <Target className="w-6 h-6" />
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20 shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6" />
               </span>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Metas Mensais & Inteligência Financeira
               </h2>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-2xl">
               Estipula e acompanha os teus objetivos com aconselhamento em tempo real cruzado com os teus movimentos, orçamentos e investimentos.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleOpenNewGoalModal}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95 text-sm shrink-0"
-            >
-              <Plus className="w-4 h-4" /> Nova Meta Mensal
-            </button>
-            <div className="flex gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2">
               <CustomSelect value={goalFilterYear} onChange={setGoalFilterYear as any} options={[{value:"2025",label:"2025"},{value:"2026",label:"2026"}]} />
               <CustomSelect value={goalFilterMonth} onChange={setGoalFilterMonth as any} options={[{value:"1",label:"Jan"},{value:"2",label:"Fev"},{value:"3",label:"Mar"},{value:"4",label:"Abr"},{value:"5",label:"Mai"},{value:"6",label:"Jun"},{value:"7",label:"Jul"},{value:"8",label:"Ago"},{value:"9",label:"Set"},{value:"10",label:"Out"},{value:"11",label:"Nov"},{value:"12",label:"Dez"}]} />
             </div>
+            <button
+              onClick={handleOpenNewGoalModal}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-md shadow-primary/25 transition-all active:scale-95 text-xs sm:text-sm whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 shrink-0" /> Nova Meta
+            </button>
           </div>
         </div>
 

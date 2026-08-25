@@ -4,7 +4,7 @@ export interface SmartInsight {
   id: string;
   title: string;
   message: string;
-  type: "goal" | "budget" | "compound" | "runway" | "savings_rate";
+  type: "goal" | "budget" | "compound" | "runway" | "savings_rate" | "milestone";
   iconType: "sparkles" | "trending_up" | "alert" | "piggy" | "target";
 }
 
@@ -39,7 +39,7 @@ export async function generateSmartInsights(): Promise<SmartInsight[]> {
 
     // 1. Cálculos de Despesas e Receitas
     const expenses = transactions.filter((t) => t.type === "expense");
-    const incomes = transactions.filter((t) => t.type === "income");
+    const incomes = transactions.filter((t) => t.type === "income" && !t.is_transfer);
 
     const totalIncome = incomes.reduce((acc, t) => acc + (t.amount || 0), 0);
     const totalExpense = expenses.reduce((acc, t) => acc + (t.amount || 0), 0);
@@ -63,18 +63,18 @@ export async function generateSmartInsights(): Promise<SmartInsight[]> {
 
     const sortedExpenses = Object.values(categorySpending).sort((a, b) => b.amount - a.amount);
     const topExpense = sortedExpenses[0];
+    const secondExpense = sortedExpenses[1];
 
     // Investimentos com meta definida
     const investmentsWithTarget = investments.filter((i) => i.target && i.target > i.balance);
 
     // =========================================================================
-    // INSIGHT 1: Aceleração de Meta Cruzando Maior Categoria com Investimento
+    // INSIGHT 1: Aceleração de Meta Cruzando Maior Categoria com Investimento 1
     // =========================================================================
     if (topExpense && topExpense.amount >= 30 && investmentsWithTarget.length > 0) {
       const targetInv = investmentsWithTarget[0];
       const remainingTarget = targetInv.target - targetInv.balance;
       
-      // Simulação de poupar 15% a 25% na maior despesa
       const suggestedSaving = Math.max(10, Math.round(topExpense.amount * 0.20));
       const currentMonthlySavings = Math.max(50, totalIncome - totalExpense > 0 ? totalIncome - totalExpense : 100);
       
@@ -83,7 +83,7 @@ export async function generateSmartInsights(): Promise<SmartInsight[]> {
       const monthsSaved = Math.max(1, normalMonths - acceleratedMonths);
 
       insights.push({
-        id: "goal_acceleration",
+        id: "goal_acceleration_1",
         title: "Aceleração de Meta Financeira",
         message: `Se poupares ${formatCurrency(suggestedSaving)} no próximo mês em ${topExpense.name}, poderás atingir a tua meta de ${formatCurrency(targetInv.target)} no investimento "${targetInv.name}" ${monthsSaved} ${monthsSaved === 1 ? "mês" : "meses"} mais cedo (em aprox. ${acceleratedMonths} meses)!`,
         type: "goal",
@@ -92,10 +92,31 @@ export async function generateSmartInsights(): Promise<SmartInsight[]> {
     }
 
     // =========================================================================
-    // INSIGHT 2: Alerta / Otimização de Categoria Próxima do Orçamento
+    // INSIGHT 2: Aceleração com Segunda Maior Despesa
+    // =========================================================================
+    if (secondExpense && secondExpense.amount >= 25 && investmentsWithTarget.length > 0) {
+      const targetInv = investmentsWithTarget[1] || investmentsWithTarget[0];
+      const remainingTarget = targetInv.target - targetInv.balance;
+      const suggestedSaving = Math.max(10, Math.round(secondExpense.amount * 0.15));
+      const currentMonthlySavings = Math.max(50, totalIncome - totalExpense > 0 ? totalIncome - totalExpense : 100);
+      const normalMonths = Math.ceil(remainingTarget / currentMonthlySavings);
+      const acceleratedMonths = Math.ceil(remainingTarget / (currentMonthlySavings + suggestedSaving));
+      const monthsSaved = Math.max(1, normalMonths - acceleratedMonths);
+
+      insights.push({
+        id: "goal_acceleration_2",
+        title: "Otimização de Gastos Secundários",
+        message: `Ao reduzires apenas 15% (${formatCurrency(suggestedSaving)}) em ${secondExpense.name}, aceleras a tua meta no ativo "${targetInv.name}" em cerca de ${monthsSaved} ${monthsSaved === 1 ? "mês" : "meses"}!`,
+        type: "goal",
+        iconType: "target"
+      });
+    }
+
+    // =========================================================================
+    // INSIGHT 3: Alerta / Otimização de Categoria Próxima do Orçamento
     // =========================================================================
     const budgetExceeded = sortedExpenses.find(
-      (c) => c.budget_limit && c.budget_limit > 0 && c.amount >= c.budget_limit * 0.8
+      (c) => c.budget_limit && c.budget_limit > 0 && c.amount >= c.budget_limit * 0.75
     );
 
     if (budgetExceeded && budgetExceeded.budget_limit) {
@@ -105,46 +126,61 @@ export async function generateSmartInsights(): Promise<SmartInsight[]> {
       insights.push({
         id: "budget_optimization",
         title: "Otimização de Orçamento",
-        message: `A categoria ${budgetExceeded.name} já consumiu ${pct}% do teto mensal. Mantendo os gastos controlados nestes últimos dias, podes redirecionar ${formatCurrency(remainingLimit > 0 ? remainingLimit : 50)} diretamente para as tuas poupanças!`,
+        message: `A categoria ${budgetExceeded.name} já consumiu ${pct}% do teto mensal estipulado. Mantendo os gastos controlados, proteges ${formatCurrency(remainingLimit > 0 ? remainingLimit : 30)} para os teus investimentos!`,
         type: "budget",
         iconType: "alert"
       });
     }
 
     // =========================================================================
-    // INSIGHT 3: Projeção de Juros Compostos a 3 Anos
+    // INSIGHT 4: Projeção de Juros Compostos a 3 Anos (7%/ano)
     // =========================================================================
     const potentialMonthlyExtra = topExpense ? Math.max(25, Math.round(topExpense.amount * 0.15)) : 50;
-    // FV = P * (( (1 + r)^n - 1) / r) para juros compostos mensais a 7%/ano em 3 anos (36 meses)
     const monthlyRate = 0.07 / 12;
     const futureValue3Years = Math.round(
       potentialMonthlyExtra * ((Math.pow(1 + monthlyRate, 36) - 1) / monthlyRate)
     );
 
     insights.push({
-      id: "compound_growth",
-      title: "Poder dos Juros Compostos",
-      message: `Ao poupares apenas ${formatCurrency(potentialMonthlyExtra)}/mês e reinvestires com um retorno médio de 7% ao ano, acumularás ${formatCurrency(futureValue3Years)} adicionais daqui a 3 anos!`,
+      id: "compound_growth_3y",
+      title: "Poder dos Juros Compostos (3 Anos)",
+      message: `Ao poupares ${formatCurrency(potentialMonthlyExtra)}/mês e reinvestires a 7% ao ano, acumularás ${formatCurrency(futureValue3Years)} adicionais em apenas 3 anos!`,
       type: "compound",
       iconType: "trending_up"
     });
 
     // =========================================================================
-    // INSIGHT 4: Runway / Cobertura da Reserva de Emergência
+    // INSIGHT 5: Projeção de Juros Compostos a 5 Anos (8%/ano)
+    // =========================================================================
+    const monthlyRate5y = 0.08 / 12;
+    const futureValue5Years = Math.round(
+      potentialMonthlyExtra * ((Math.pow(1 + monthlyRate5y, 60) - 1) / monthlyRate5y)
+    );
+
+    insights.push({
+      id: "compound_growth_5y",
+      title: "Horizonte a 5 Anos",
+      message: `Mantendo um aporte extra constante de ${formatCurrency(potentialMonthlyExtra)}/mês a 8% ao ano, terás ${formatCurrency(futureValue5Years)} de capital acumulado em 5 anos!`,
+      type: "compound",
+      iconType: "trending_up"
+    });
+
+    // =========================================================================
+    // INSIGHT 6: Runway / Cobertura da Reserva de Emergência
     // =========================================================================
     if (totalInvested > 0 && totalExpense > 0) {
       const runwayMonths = (totalInvested / totalExpense).toFixed(1);
       insights.push({
         id: "financial_runway",
         title: "Segurança e Liberdade Financeira",
-        message: `O teu património investido atual (${formatCurrency(totalInvested)}) cobre aproximadamente ${runwayMonths} meses do teu custo de vida mensal atual!`,
+        message: `O teu património investido total (${formatCurrency(totalInvested)}) cobre aproximadamente ${runwayMonths} meses do teu custo de vida mensal atual!`,
         type: "runway",
         iconType: "piggy"
       });
     }
 
     // =========================================================================
-    // INSIGHT 5: Taxa de Poupança (Savings Rate)
+    // INSIGHT 7: Taxa de Poupança (Savings Rate)
     // =========================================================================
     if (totalIncome > 0) {
       const savingsRate = Math.round(((totalIncome - totalExpense) / totalIncome) * 100);

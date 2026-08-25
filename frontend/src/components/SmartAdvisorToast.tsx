@@ -2,11 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { Sparkles, TrendingUp, AlertTriangle, PiggyBank, Target, X, Lightbulb } from "lucide-react";
+import { Sparkles, TrendingUp, AlertTriangle, PiggyBank, Target, X, Lightbulb, ChevronRight } from "lucide-react";
 import { generateSmartInsights, SmartInsight } from "@/lib/smartAdvisor";
 
 export function SmartAdvisorToastManager() {
-  const insightIndexRef = useRef<number>(0);
   const insightsCacheRef = useRef<SmartInsight[]>([]);
 
   const showNextInsight = async () => {
@@ -19,8 +18,21 @@ export function SmartAdvisorToastManager() {
     const list = insightsCacheRef.current;
     if (list.length === 0) return;
 
-    const insight = list[insightIndexRef.current % list.length];
-    insightIndexRef.current += 1;
+    // Obter e incrementar índice persistido no localStorage para alternar entre dicas mesmo após recarregar
+    let currentIndex = 0;
+    try {
+      const savedIndex = localStorage.getItem("pl_advisor_last_index");
+      if (savedIndex !== null) {
+        currentIndex = (parseInt(savedIndex, 10) + 1) % list.length;
+      } else {
+        currentIndex = Math.floor(Math.random() * list.length);
+      }
+      localStorage.setItem("pl_advisor_last_index", String(currentIndex));
+    } catch {
+      currentIndex = Math.floor(Math.random() * list.length);
+    }
+
+    const insight = list[currentIndex];
 
     // Renderizar o Toast Inteligente com design Glassmorphic Premium
     toast.custom(
@@ -67,6 +79,17 @@ export function SmartAdvisorToastManager() {
               <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-medium">
                 {insight.message}
               </p>
+
+              {/* Ação rápida para ver próxima dica */}
+              <button
+                onClick={() => {
+                  toast.dismiss(t);
+                  setTimeout(() => showNextInsight(), 200);
+                }}
+                className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+              >
+                Ver outra dica <ChevronRight className="w-3 h-3" />
+              </button>
             </div>
 
             {/* Botão Fechar */}
@@ -87,10 +110,10 @@ export function SmartAdvisorToastManager() {
   };
 
   useEffect(() => {
-    // 1. Mostrar primeira dica inteligente 15 segundos após carregar o dashboard
+    // 1. Mostrar primeira dica inteligente 12 segundos após carregar o dashboard
     const initialTimer = setTimeout(() => {
       showNextInsight();
-    }, 15000);
+    }, 12000);
 
     // 2. Repetir a cada 10 minutos (10 * 60 * 1000 ms)
     const TEN_MINUTES_MS = 10 * 60 * 1000;
