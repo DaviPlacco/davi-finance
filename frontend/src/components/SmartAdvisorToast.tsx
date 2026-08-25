@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { Sparkles, TrendingUp, AlertTriangle, PiggyBank, Target, X, Lightbulb, ChevronRight } from "lucide-react";
+import { TrendingUp, AlertTriangle, PiggyBank, Target, X, Lightbulb, ChevronRight } from "lucide-react";
 import { generateSmartInsights, SmartInsight } from "@/lib/smartAdvisor";
 
 export function SmartAdvisorToastManager() {
@@ -34,11 +34,11 @@ export function SmartAdvisorToastManager() {
 
     const insight = list[currentIndex];
 
-    // Renderizar o Toast Inteligente com design Glassmorphic Premium
+    // Renderizar o Toast Inteligente adaptável a Temas Light/Dark e Paleta de Cores
     toast.custom(
       (t) => {
-        let icon = <Lightbulb className="w-5 h-5 text-amber-400" />;
-        let iconBg = "bg-amber-500/10 text-amber-500 border-amber-500/20";
+        let icon = <Lightbulb className="w-5 h-5 text-amber-500" />;
+        let iconBg = "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
         let badgeText = "DICA INTELIGENTE";
 
         if (insight.iconType === "target") {
@@ -46,21 +46,21 @@ export function SmartAdvisorToastManager() {
           iconBg = "bg-primary/10 text-primary border-primary/20";
           badgeText = "META & OBJETIVO";
         } else if (insight.iconType === "trending_up") {
-          icon = <TrendingUp className="w-5 h-5 text-emerald-400" />;
-          iconBg = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+          icon = <TrendingUp className="w-5 h-5 text-emerald-500" />;
+          iconBg = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
           badgeText = "PROJEÇÃO FINANCEIRA";
         } else if (insight.iconType === "alert") {
-          icon = <AlertTriangle className="w-5 h-5 text-rose-400" />;
-          iconBg = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+          icon = <AlertTriangle className="w-5 h-5 text-rose-500" />;
+          iconBg = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
           badgeText = "AVISO DE ORÇAMENTO";
         } else if (insight.iconType === "piggy") {
-          icon = <PiggyBank className="w-5 h-5 text-cyan-400" />;
-          iconBg = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+          icon = <PiggyBank className="w-5 h-5 text-cyan-500" />;
+          iconBg = "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20";
           badgeText = "PATRIMÓNIO & RESERVA";
         }
 
         return (
-          <div className="w-full max-w-md bg-slate-900/95 dark:bg-slate-950/95 text-white border border-slate-700/60 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-2xl shadow-black/50 relative flex gap-4 items-start animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="w-full max-w-md bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white border border-slate-200/90 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-xl shadow-slate-900/10 dark:shadow-2xl dark:shadow-black/50 relative flex gap-4 items-start animate-in fade-in slide-in-from-top-4 duration-300">
             {/* Ícone com Badge */}
             <div className={`p-3 rounded-xl border shrink-0 ${iconBg}`}>
               {icon}
@@ -68,15 +68,15 @@ export function SmartAdvisorToastManager() {
 
             {/* Conteúdo */}
             <div className="flex-1 pr-6">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md bg-white/10 text-slate-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5">
                   {badgeText}
                 </span>
               </div>
-              <h4 className="text-sm font-bold text-white mb-1.5 flex items-center gap-1.5">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
                 {insight.title}
               </h4>
-              <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-medium">
+              <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {insight.message}
               </p>
 
@@ -86,7 +86,7 @@ export function SmartAdvisorToastManager() {
                   toast.dismiss(t);
                   setTimeout(() => showNextInsight(), 200);
                 }}
-                className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+                className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:opacity-80 transition-opacity"
               >
                 Ver outra dica <ChevronRight className="w-3 h-3" />
               </button>
@@ -95,7 +95,7 @@ export function SmartAdvisorToastManager() {
             {/* Botão Fechar */}
             <button
               onClick={() => toast.dismiss(t)}
-              className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               title="Fechar dica"
             >
               <X className="w-4 h-4" />

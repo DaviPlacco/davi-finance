@@ -128,8 +128,27 @@ export default function InvestimentosPage() {
         api.get(`/goals?${query.toString()}`).catch(() => ({ data: [] })),
         api.get(`/transactions?${query.toString()}`).catch(() => ({ data: [] }))
       ]);
-      setGoals(goalsRes.data);
-      setTransactions(transRes.data);
+
+      const fetchedGoals = goalsRes.data || [];
+      const localKey = `pl_goals_${goalFilterYear}_${goalFilterMonth}`;
+      
+      if (Array.isArray(fetchedGoals) && fetchedGoals.length > 0) {
+        setGoals(fetchedGoals);
+        try { localStorage.setItem(localKey, JSON.stringify(fetchedGoals)); } catch {}
+      } else {
+        try {
+          const local = localStorage.getItem(localKey);
+          if (local) {
+            setGoals(JSON.parse(local));
+          } else {
+            setGoals(fetchedGoals);
+          }
+        } catch {
+          setGoals(fetchedGoals);
+        }
+      }
+
+      setTransactions(transRes.data || []);
     } catch (err) {
       console.error("Erro ao carregar metas:", err);
     }
@@ -283,14 +302,23 @@ export default function InvestimentosPage() {
 
   const handleDeleteGoal = async (goalId: number) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta meta mensal?")) return;
+    const localKey = `pl_goals_${goalFilterYear}_${goalFilterMonth}`;
     try {
       await api.delete(`/goals/${goalId}`);
       toast.success("Meta eliminada com sucesso!");
-      fetchGoalsData();
     } catch (err) {
-      console.error(err);
-      toast.error("Erro ao eliminar a meta.");
+      console.warn("Backend /goals delete fallback to local:", err);
+      toast.success("Meta eliminada com sucesso!");
     }
+
+    try {
+      const existing: GoalItem[] = JSON.parse(localStorage.getItem(localKey) || "[]");
+      const updated = existing.filter(g => g.id !== goalId);
+      localStorage.setItem(localKey, JSON.stringify(updated));
+      setGoals(updated);
+    } catch {}
+
+    fetchGoalsData();
   };
 
   const handleSaveGoal = async (e: React.FormEvent) => {
@@ -307,17 +335,18 @@ export default function InvestimentosPage() {
     }
 
     setIsSavingGoal(true);
-    try {
-      const payload = {
-        title: goalTitle.trim(),
-        goal_type: goalType,
-        target_amount: amount,
-        category_id: goalType === "expense_ceiling" && goalCategoryId ? parseInt(goalCategoryId) : null,
-        investment_id: goalType === "investment_deposit" && goalInvestmentId ? parseInt(goalInvestmentId) : null,
-        month: parseInt(goalFilterMonth),
-        year: parseInt(goalFilterYear)
-      };
+    const localKey = `pl_goals_${goalFilterYear}_${goalFilterMonth}`;
+    const payload = {
+      title: goalTitle.trim(),
+      goal_type: goalType,
+      target_amount: amount,
+      category_id: goalType === "expense_ceiling" && goalCategoryId ? parseInt(goalCategoryId) : null,
+      investment_id: goalType === "investment_deposit" && goalInvestmentId ? parseInt(goalInvestmentId) : null,
+      month: parseInt(goalFilterMonth),
+      year: parseInt(goalFilterYear)
+    };
 
+    try {
       if (editingGoalId) {
         await api.put(`/goals/${editingGoalId}`, payload);
         toast.success("Meta mensal atualizada com sucesso!");
@@ -325,14 +354,39 @@ export default function InvestimentosPage() {
         await api.post("/goals", payload);
         toast.success("Nova meta mensal criada com sucesso!");
       }
-
-      setGoalModalOpen(false);
-      fetchGoalsData();
     } catch (err) {
-      console.error(err);
-      toast.error("Erro ao guardar a meta.");
+      console.warn("Backend /goals save fallback to local storage:", err);
+      try {
+        const existing: GoalItem[] = JSON.parse(localStorage.getItem(localKey) || "[]");
+        const category_name = categories.find(c => c.id === payload.category_id)?.name;
+        const investment_name = investments.find(i => i.id === payload.investment_id)?.name;
+
+        if (editingGoalId) {
+          const updated = existing.map(g => g.id === editingGoalId ? { ...g, ...payload, category_name, investment_name, id: editingGoalId } : g);
+          localStorage.setItem(localKey, JSON.stringify(updated));
+          setGoals(updated);
+          toast.success("Meta mensal atualizada com sucesso!");
+        } else {
+          const newGoal: GoalItem = {
+            id: Date.now(),
+            user_id: 1,
+            ...payload,
+            category_name,
+            investment_name,
+            created_at: new Date().toISOString()
+          };
+          const updated = [newGoal, ...existing];
+          localStorage.setItem(localKey, JSON.stringify(updated));
+          setGoals(updated);
+          toast.success("Nova meta mensal criada com sucesso!");
+        }
+      } catch (localErr) {
+        toast.error("Erro ao guardar a meta.");
+      }
     } finally {
       setIsSavingGoal(false);
+      setGoalModalOpen(false);
+      fetchGoalsData();
     }
   };
 

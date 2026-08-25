@@ -33,7 +33,7 @@ async function handleProxy(req: NextRequest, pathArray: string[]) {
       method: req.method,
       headers,
       body,
-      redirect: 'manual',
+      redirect: 'follow',
     });
 
     const contentType = response.headers.get('content-type');

@@ -692,6 +692,7 @@ def delete_simulation(sim_id: int, db: Session = Depends(get_db), current_user: 
 
 # ----------------- GOALS -----------------
 @app.post("/goals", response_model=schemas.GoalResponse)
+@app.post("/goals/", response_model=schemas.GoalResponse)
 def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     db_goal = models.Goal(**goal.model_dump(), user_id=current_user.id)
     db.add(db_goal)
@@ -715,6 +716,7 @@ def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db), current
     )
 
 @app.get("/goals", response_model=List[schemas.GoalResponse])
+@app.get("/goals/", response_model=List[schemas.GoalResponse])
 def get_goals(year: Optional[int] = None, month: Optional[int] = None, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     query = db.query(models.Goal).filter(models.Goal.user_id == current_user.id)
     if year is not None:
