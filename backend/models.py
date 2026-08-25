@@ -32,6 +32,7 @@ class User(Base):
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
     investments = relationship("Investment", back_populates="user", cascade="all, delete-orphan")
     simulations = relationship("Simulation", back_populates="user", cascade="all, delete-orphan")
+    goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
 
 class CategoryGroup(Base):
     __tablename__ = "category_groups"
@@ -111,3 +112,21 @@ class InvestmentLog(Base):
     type = Column(Enum(InvestmentLogType), nullable=False)
     
     investment = relationship("Investment", back_populates="logs")
+
+class Goal(Base):
+    __tablename__ = "goals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    goal_type = Column(String(50), nullable=False)  # investment_deposit, expense_ceiling, savings_rate, net_savings
+    target_amount = Column(Float, nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    investment_id = Column(Integer, ForeignKey("investments.id"), nullable=True)
+    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="goals")
+    category = relationship("Category")
+    investment = relationship("Investment")

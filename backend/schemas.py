@@ -113,3 +113,35 @@ class SimulationResponse(SimulationBase):
     created_at: datetime
     class Config:
         from_attributes = True
+
+# Goal Schemas
+class GoalBase(BaseModel):
+    title: str
+    goal_type: str  # investment_deposit, expense_ceiling, savings_rate, net_savings
+    target_amount: float
+    category_id: Optional[int] = None
+    investment_id: Optional[int] = None
+    month: int
+    year: int
+
+class GoalCreate(GoalBase):
+    pass
+
+class GoalUpdate(BaseModel):
+    title: Optional[str] = None
+    goal_type: Optional[str] = None
+    target_amount: Optional[float] = None
+    category_id: Optional[int] = None
+    investment_id: Optional[int] = None
+    month: Optional[int] = None
+    year: Optional[int] = None
+
+class GoalResponse(GoalBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    category_name: Optional[str] = None
+    investment_name: Optional[str] = None
+    class Config:
+        from_attributes = True
+

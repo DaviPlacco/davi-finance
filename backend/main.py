@@ -618,3 +618,95 @@ def delete_simulation(sim_id: int, db: Session = Depends(get_db), current_user: 
     db.delete(db_sim)
     db.commit()
     return {"message": "Simulation deleted"}
+
+# ----------------- GOALS -----------------
+@app.post("/goals", response_model=schemas.GoalResponse)
+def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_goal = models.Goal(**goal.model_dump(), user_id=current_user.id)
+    db.add(db_goal)
+    db.commit()
+    db.refresh(db_goal)
+    category_name = db_goal.category.name if db_goal.category else None
+    investment_name = db_goal.investment.name if db_goal.investment else None
+    return schemas.GoalResponse(
+        id=db_goal.id,
+        user_id=db_goal.user_id,
+        title=db_goal.title,
+        goal_type=db_goal.goal_type,
+        target_amount=db_goal.target_amount,
+        category_id=db_goal.category_id,
+        investment_id=db_goal.investment_id,
+        month=db_goal.month,
+        year=db_goal.year,
+        created_at=db_goal.created_at,
+        category_name=category_name,
+        investment_name=investment_name
+    )
+
+@app.get("/goals", response_model=List[schemas.GoalResponse])
+def get_goals(year: Optional[int] = None, month: Optional[int] = None, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    query = db.query(models.Goal).filter(models.Goal.user_id == current_user.id)
+    if year is not None:
+        query = query.filter(models.Goal.year == year)
+    if month is not None:
+        query = query.filter(models.Goal.month == month)
+    goals = query.order_by(models.Goal.created_at.desc()).all()
+    
+    result = []
+    for g in goals:
+        category_name = g.category.name if g.category else None
+        investment_name = g.investment.name if g.investment else None
+        result.append(schemas.GoalResponse(
+            id=g.id,
+            user_id=g.user_id,
+            title=g.title,
+            goal_type=g.goal_type,
+            target_amount=g.target_amount,
+            category_id=g.category_id,
+            investment_id=g.investment_id,
+            month=g.month,
+            year=g.year,
+            created_at=g.created_at,
+            category_name=category_name,
+            investment_name=investment_name
+        ))
+    return result
+
+@app.put("/goals/{goal_id}", response_model=schemas.GoalResponse)
+def update_goal(goal_id: int, goal_data: schemas.GoalUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_goal = db.query(models.Goal).filter(models.Goal.id == goal_id, models.Goal.user_id == current_user.id).first()
+    if not db_goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    update_dict = goal_data.model_dump(exclude_unset=True)
+    for k, v in update_dict.items():
+        setattr(db_goal, k, v)
+    
+    db.commit()
+    db.refresh(db_goal)
+    category_name = db_goal.category.name if db_goal.category else None
+    investment_name = db_goal.investment.name if db_goal.investment else None
+    return schemas.GoalResponse(
+        id=db_goal.id,
+        user_id=db_goal.user_id,
+        title=db_goal.title,
+        goal_type=db_goal.goal_type,
+        target_amount=db_goal.target_amount,
+        category_id=db_goal.category_id,
+        investment_id=db_goal.investment_id,
+        month=db_goal.month,
+        year=db_goal.year,
+        created_at=db_goal.created_at,
+        category_name=category_name,
+        investment_name=investment_name
+    )
+
+@app.delete("/goals/{goal_id}")
+def delete_goal(goal_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    db_goal = db.query(models.Goal).filter(models.Goal.id == goal_id, models.Goal.user_id == current_user.id).first()
+    if not db_goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    db.delete(db_goal)
+    db.commit()
+    return {"message": "Goal deleted"}
+
