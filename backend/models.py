@@ -73,6 +73,7 @@ class Transaction(Base):
     description = Column(String(500))
     type = Column(Enum(TransactionType), nullable=False)
     receipt_image = Column(Text(length=4294967295), nullable=True)
+    is_transfer = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")

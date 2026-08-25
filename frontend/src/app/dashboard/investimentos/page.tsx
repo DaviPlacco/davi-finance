@@ -70,6 +70,7 @@ export default function InvestimentosPage() {
   const [adjustInv, setAdjustInv] = useState<any>(null);
   const [adjustAmount, setAdjustAmount] = useState("");
   const [adjustType, setAdjustType] = useState<"add" | "remove">("add");
+  const [transferToBalance, setTransferToBalance] = useState(true);
 
   // Monthly Goals State
   const currentYearStr = new Date().getFullYear().toString();
@@ -142,23 +143,41 @@ export default function InvestimentosPage() {
     const amount = parseFloat(adjustAmount.replace(",", "."));
     if (isNaN(amount) || amount <= 0) return;
 
-    const newBalance = adjustType === "add" ? parseFloat(adjustInv.balance) + amount : parseFloat(adjustInv.balance) - amount;
+    if (adjustType === "remove" && amount > adjustInv.balance) {
+      toast.error("Saldo insuficiente no ativo selecionado.");
+      return;
+    }
 
     try {
-      await api.put(`/investments/${adjustInv.id}`, {
-        name: adjustInv.name,
-        asset_type: adjustInv.asset_type,
-        balance: newBalance,
-        target: adjustInv.target
-      });
-      toast.success("Saldo atualizado com sucesso!");
+      if (adjustType === "remove") {
+        await api.post(`/investments/${adjustInv.id}/withdraw`, {
+          amount: amount,
+          transfer_to_balance: transferToBalance
+        });
+        toast.success(
+          transferToBalance 
+            ? "Retirada efetuada e creditada no Saldo Atual!" 
+            : "Saldo do ativo atualizado com sucesso!"
+        );
+        window.dispatchEvent(new Event("transactions-updated"));
+      } else {
+        const newBalance = parseFloat(adjustInv.balance) + amount;
+        await api.put(`/investments/${adjustInv.id}`, {
+          name: adjustInv.name,
+          asset_type: adjustInv.asset_type,
+          balance: newBalance,
+          target: adjustInv.target
+        });
+        toast.success("Saldo adicionado com sucesso!");
+      }
+
       setAdjustModalOpen(false);
       setAdjustAmount("");
       fetchData();
       fetchGoalsData();
-    } catch(err) {
+    } catch(err: any) {
       console.error(err);
-      toast.error("Erro ao atualizar o saldo.");
+      toast.error(err?.response?.data?.detail || "Erro ao atualizar o saldo.");
     }
   };
 
@@ -903,6 +922,26 @@ export default function InvestimentosPage() {
                   />
                 </div>
               </div>
+
+              {adjustType === "remove" && (
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={transferToBalance}
+                      onChange={(e) => setTransferToBalance(e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Creditar diretamente no &quot;Saldo Atual&quot;
+                    </span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-6 leading-tight">
+                    Cria automaticamente o movimento <strong>&quot;Investimento - Saída&quot;</strong> creditado na tua conta sem inflacionar as receitas operacionais do mês.
+                  </p>
+                </div>
+              )}
+
               <button 
                 type="submit" 
                 className={`w-full py-4 text-white font-bold rounded-xl shadow-lg transition-all ${

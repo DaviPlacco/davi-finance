@@ -38,6 +38,11 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_transfer BOOLEAN DEFAULT FALSE"))
+            conn.commit()
+        except Exception:
+            pass
 
 run_migrations()
 
@@ -406,6 +411,72 @@ def delete_investment(investment_id: int, db: Session = Depends(get_db), current
     db.commit()
     return {"message": "Investment deleted"}
 
+@app.post("/investments/{investment_id}/withdraw")
+def withdraw_investment(
+    investment_id: int, 
+    req: schemas.WithdrawalRequest, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    db_investment = db.query(models.Investment).filter(
+        models.Investment.id == investment_id, 
+        models.Investment.user_id == current_user.id
+    ).first()
+    if not db_investment:
+        raise HTTPException(status_code=404, detail="Investment not found")
+    
+    if req.amount <= 0:
+        raise HTTPException(status_code=400, detail="O montante a retirar deve ser maior que zero")
+    
+    if req.amount > db_investment.balance:
+        raise HTTPException(status_code=400, detail="Saldo insuficiente no investimento selecionado")
+    
+    # 1. Update investment balance
+    db_investment.balance -= req.amount
+    
+    # 2. Log withdrawal in investment logs
+    log = models.InvestmentLog(
+        investment_id=db_investment.id,
+        amount=req.amount,
+        type=models.InvestmentLogType.YIELD,
+        date=datetime.utcnow()
+    )
+    db.add(log)
+    
+    # 3. If transfer to current balance is requested
+    if req.transfer_to_balance:
+        # Find or create Category 'Investimento - Saída'
+        cat = db.query(models.Category).filter(
+            models.Category.user_id == current_user.id,
+            models.Category.name == "Investimento - Saída"
+        ).first()
+        if not cat:
+            cat = models.Category(
+                user_id=current_user.id,
+                name="Investimento - Saída",
+                color="#3b82f6",
+                type=models.CategoryType.INCOME
+            )
+            db.add(cat)
+            db.commit()
+            db.refresh(cat)
+        
+        # Create transfer transaction
+        trans = models.Transaction(
+            user_id=current_user.id,
+            category_id=cat.id,
+            amount=req.amount,
+            date=datetime.utcnow(),
+            description=f"Investimento - Saída ({db_investment.name})",
+            type=models.TransactionType.INCOME,
+            is_transfer=True
+        )
+        db.add(trans)
+    
+    db.commit()
+    db.refresh(db_investment)
+    return {"message": "Retirada efetuada com sucesso", "balance": db_investment.balance}
+
 @app.get("/investments/history")
 def get_investment_history(
     year: Optional[int] = None,
@@ -508,7 +579,7 @@ def get_summary(
         
     effective_selected_transactions = [t for t in selected_transactions if t.date <= now]
     
-    total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME)
+    total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
     total_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE)
     total_invested = sum(i.balance for i in investments)
     
@@ -531,7 +602,7 @@ def get_summary(
     if year and month:
         num_days = calendar.monthrange(year, month)[1]
         for day in range(1, num_days + 1):
-            daily_income = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.INCOME)
+            daily_income = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
             daily_expense = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.EXPENSE)
             chart_data.append({
                 "name": str(day),
@@ -543,7 +614,7 @@ def get_summary(
     else:
         months_abbr = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
         for m in range(1, 13):
-            monthly_income = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.INCOME)
+            monthly_income = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
             monthly_expense = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.EXPENSE)
             chart_data.append({
                 "name": months_abbr[m-1],
@@ -579,7 +650,7 @@ def get_reports_history(db: Session = Depends(get_db), current_user: models.User
                 "expense": 0,
             }
             
-        if t.type == models.TransactionType.INCOME:
+        if t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False):
             history_map[key]["income"] += t.amount
         elif t.type == models.TransactionType.EXPENSE:
             history_map[key]["expense"] += t.amount

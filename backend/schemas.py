@@ -72,6 +72,7 @@ class TransactionBase(BaseModel):
     description: Optional[str] = None
     type: TransactionType
     receipt_image: Optional[str] = None
+    is_transfer: Optional[bool] = False
 
 class TransactionCreate(TransactionBase):
     pass
@@ -81,6 +82,10 @@ class TransactionResponse(TransactionBase):
     user_id: int
     class Config:
         from_attributes = True
+
+class WithdrawalRequest(BaseModel):
+    amount: float
+    transfer_to_balance: bool = True
 
 # Investment Schemas
 class InvestmentBase(BaseModel):
