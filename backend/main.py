@@ -412,6 +412,7 @@ def delete_investment(investment_id: int, db: Session = Depends(get_db), current
     return {"message": "Investment deleted"}
 
 @app.post("/investments/{investment_id}/withdraw")
+@app.post("/investments/{investment_id}/withdraw/")
 def withdraw_investment(
     investment_id: int, 
     req: schemas.WithdrawalRequest, 
