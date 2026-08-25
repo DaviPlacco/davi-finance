@@ -2,13 +2,13 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import extract, text
+from sqlalchemy import extract, text, func
 from datetime import timedelta, datetime
 import calendar
 import random
 from typing import Optional, List
 import models, schemas, auth
-from database import engine, get_db
+from database import engine, get_db, SessionLocal
 import os
 from dotenv import load_dotenv
 
@@ -53,6 +53,84 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+    try:
+        db = SessionLocal()
+        users = db.query(models.User).all()
+        for u in users:
+            deduplicate_user_categories(u.id, db)
+        db.close()
+    except Exception:
+        pass
+
+def deduplicate_user_categories(user_id: int, db: Session):
+    """
+    Encontra categorias do mesmo utilizador com o mesmo tipo e nome idêntico (case-insensitive).
+    Unifica todas as transações e metas na categoria canónica e elimina os registos duplicados.
+    """
+    try:
+        categories = db.query(models.Category).filter(models.Category.user_id == user_id).order_by(models.Category.id.asc()).all()
+        groups: dict[tuple[str, str], list[models.Category]] = {}
+        for c in categories:
+            cleaned_name = c.name.strip().lower() if c.name else ""
+            cat_type = str(c.type.value if hasattr(c.type, 'value') else c.type).lower()
+            key = (cleaned_name, cat_type)
+            if key not in groups:
+                groups[key] = []
+            groups[key].append(c)
+        
+        modified = False
+        for (c_name, c_type), cat_list in groups.items():
+            if len(cat_list) > 1:
+                # Escolhe a categoria canónica: prioridade para quem tem icon, group_id, budget_limit, ou menor ID
+                canonical = sorted(
+                    cat_list,
+                    key=lambda x: (
+                        0 if x.icon else 1,
+                        0 if x.group_id else 1,
+                        0 if (x.budget_limit and x.budget_limit > 0) else 1,
+                        x.id
+                    )
+                )[0]
+                
+                duplicate_ids = [c.id for c in cat_list if c.id != canonical.id]
+                
+                # Fundir metadados para a canónica
+                for dup in cat_list:
+                    if dup.id != canonical.id:
+                        if not canonical.icon and dup.icon:
+                            canonical.icon = dup.icon
+                        if not canonical.group_id and dup.group_id:
+                            canonical.group_id = dup.group_id
+                        if not canonical.budget_limit and dup.budget_limit:
+                            canonical.budget_limit = dup.budget_limit
+                        if (not canonical.color or canonical.color == '#3b82f6') and dup.color and dup.color != '#3b82f6':
+                            canonical.color = dup.color
+                
+                if duplicate_ids:
+                    # 1. Reatribuir transações
+                    db.query(models.Transaction).filter(
+                        models.Transaction.user_id == user_id,
+                        models.Transaction.category_id.in_(duplicate_ids)
+                    ).update({models.Transaction.category_id: canonical.id}, synchronize_session=False)
+                    
+                    # 2. Reatribuir metas
+                    db.query(models.Goal).filter(
+                        models.Goal.user_id == user_id,
+                        models.Goal.category_id.in_(duplicate_ids)
+                    ).update({models.Goal.category_id: canonical.id}, synchronize_session=False)
+                    
+                    # 3. Eliminar categorias duplicadas
+                    db.query(models.Category).filter(
+                        models.Category.user_id == user_id,
+                        models.Category.id.in_(duplicate_ids)
+                    ).delete(synchronize_session=False)
+                    
+                    modified = True
+        if modified:
+            db.commit()
+    except Exception as e:
+        print("Erro ao unificar categorias duplicadas:", e)
+        db.rollback()
 
 run_migrations()
 
@@ -262,7 +340,24 @@ def delete_category_group(group_id: int, db: Session = Depends(get_db), current_
 # ----------------- CATEGORIES -----------------
 @app.post("/categories", response_model=schemas.CategoryResponse)
 def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
-    db_category = models.Category(**category.model_dump(), user_id=current_user.id)
+    cleaned_name = category.name.strip() if category.name else ""
+    if not cleaned_name:
+        raise HTTPException(status_code=400, detail="O nome da categoria não pode estar vazio.")
+        
+    # Verificar se já existe categoria com o mesmo nome e tipo (case-insensitive)
+    existing = db.query(models.Category).filter(
+        models.Category.user_id == current_user.id,
+        models.Category.type == category.type,
+        func.lower(func.trim(models.Category.name)) == func.lower(cleaned_name)
+    ).first()
+    
+    if existing:
+        type_label = "despesa" if str(category.type.value if hasattr(category.type, 'value') else category.type).lower() == "expense" else "receita"
+        raise HTTPException(status_code=400, detail=f"Já existe uma categoria de {type_label} com o nome '{cleaned_name}'.")
+
+    category_data = category.model_dump()
+    category_data["name"] = cleaned_name
+    db_category = models.Category(**category_data, user_id=current_user.id)
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
@@ -281,6 +376,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
 
 @app.get("/categories", response_model=list[schemas.CategoryResponse])
 def read_categories(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    deduplicate_user_categories(current_user.id, db)
     categories = db.query(models.Category).filter(models.Category.user_id == current_user.id).all()
     res = []
     for c in categories:
@@ -298,6 +394,11 @@ def read_categories(db: Session = Depends(get_db), current_user: models.User = D
         ))
     return res
 
+@app.post("/categories/merge-duplicates", response_model=list[schemas.CategoryResponse])
+def merge_duplicate_categories(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    deduplicate_user_categories(current_user.id, db)
+    return read_categories(db=db, current_user=current_user)
+
 @app.delete("/categories/{category_id}")
 def delete_category(category_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     category = db.query(models.Category).filter(models.Category.id == category_id, models.Category.user_id == current_user.id).first()
@@ -313,8 +414,27 @@ def update_category(category_id: int, category_update: schemas.CategoryCreate, d
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     
+    cleaned_name = category_update.name.strip() if category_update.name else ""
+    if not cleaned_name:
+        raise HTTPException(status_code=400, detail="O nome da categoria não pode estar vazio.")
+        
+    # Verificar se já existe OUTRA categoria com o mesmo nome e tipo (case-insensitive)
+    existing = db.query(models.Category).filter(
+        models.Category.user_id == current_user.id,
+        models.Category.id != category_id,
+        models.Category.type == category_update.type,
+        func.lower(func.trim(models.Category.name)) == func.lower(cleaned_name)
+    ).first()
+    
+    if existing:
+        type_label = "despesa" if str(category_update.type.value if hasattr(category_update.type, 'value') else category_update.type).lower() == "expense" else "receita"
+        raise HTTPException(status_code=400, detail=f"Já existe outra categoria de {type_label} com o nome '{cleaned_name}'.")
+    
     for key, value in category_update.model_dump().items():
-        setattr(category, key, value)
+        if key == "name":
+            setattr(category, key, cleaned_name)
+        else:
+            setattr(category, key, value)
         
     db.commit()
     db.refresh(category)
