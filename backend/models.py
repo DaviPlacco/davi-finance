@@ -41,6 +41,7 @@ class CategoryGroup(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(255), nullable=False)
     color = Column(String(50), default="#6366f1")
+    icon = Column(String(100), nullable=True)
     type = Column(Enum(CategoryType), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -54,6 +55,7 @@ class Category(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(255), nullable=False)
     color = Column(String(50), default="#3b82f6")
+    icon = Column(String(100), nullable=True)
     type = Column(Enum(CategoryType), nullable=False)
     budget_limit = Column(Float, nullable=True)
     group_id = Column(Integer, ForeignKey("category_groups.id", ondelete="SET NULL"), nullable=True)

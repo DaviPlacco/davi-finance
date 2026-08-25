@@ -43,6 +43,16 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE categories ADD COLUMN icon VARCHAR(100)"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE category_groups ADD COLUMN icon VARCHAR(100)"))
+            conn.commit()
+        except Exception:
+            pass
 
 run_migrations()
 
@@ -160,6 +170,7 @@ def read_category_groups(db: Session = Depends(get_db), current_user: models.Use
             user_id=g.user_id,
             name=g.name,
             color=g.color,
+            icon=g.icon,
             type=g.type,
             created_at=g.created_at,
             category_ids=cat_ids
@@ -171,6 +182,7 @@ def create_category_group(group_data: schemas.CategoryGroupCreate, db: Session =
     db_group = models.CategoryGroup(
         name=group_data.name,
         color=group_data.color,
+        icon=group_data.icon,
         type=group_data.type,
         user_id=current_user.id
     )
@@ -190,6 +202,7 @@ def create_category_group(group_data: schemas.CategoryGroupCreate, db: Session =
         user_id=db_group.user_id,
         name=db_group.name,
         color=db_group.color,
+        icon=db_group.icon,
         type=db_group.type,
         created_at=db_group.created_at,
         category_ids=group_data.category_ids or []
@@ -203,6 +216,7 @@ def update_category_group(group_id: int, group_data: schemas.CategoryGroupCreate
     
     db_group.name = group_data.name
     db_group.color = group_data.color
+    db_group.icon = group_data.icon
     db_group.type = group_data.type
     
     # Reset old associations
@@ -225,6 +239,7 @@ def update_category_group(group_id: int, group_data: schemas.CategoryGroupCreate
         user_id=db_group.user_id,
         name=db_group.name,
         color=db_group.color,
+        icon=db_group.icon,
         type=db_group.type,
         created_at=db_group.created_at,
         category_ids=group_data.category_ids or []
@@ -257,6 +272,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
         user_id=db_category.user_id,
         name=db_category.name,
         color=db_category.color,
+        icon=db_category.icon,
         type=db_category.type,
         budget_limit=db_category.budget_limit,
         group_id=db_category.group_id,
@@ -274,6 +290,7 @@ def read_categories(db: Session = Depends(get_db), current_user: models.User = D
             user_id=c.user_id,
             name=c.name,
             color=c.color,
+            icon=c.icon,
             type=c.type,
             budget_limit=c.budget_limit,
             group_id=c.group_id,
@@ -307,6 +324,7 @@ def update_category(category_id: int, category_update: schemas.CategoryCreate, d
         user_id=category.user_id,
         name=category.name,
         color=category.color,
+        icon=category.icon,
         type=category.type,
         budget_limit=category.budget_limit,
         group_id=category.group_id,

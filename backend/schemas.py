@@ -33,6 +33,7 @@ class Token(BaseModel):
 class CategoryGroupBase(BaseModel):
     name: str
     color: str = "#6366f1"
+    icon: Optional[str] = None
     type: CategoryType
 
 class CategoryGroupCreate(CategoryGroupBase):
@@ -50,6 +51,7 @@ class CategoryGroupResponse(CategoryGroupBase):
 class CategoryBase(BaseModel):
     name: str
     color: str
+    icon: Optional[str] = None
     type: CategoryType
     budget_limit: Optional[float] = None
     group_id: Optional[int] = None
