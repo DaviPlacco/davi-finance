@@ -1091,8 +1091,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* TAB 4: GRUPOS DE CATEGORIAS */}
               {activeSettingsTab === "groups" && (
                 <div className="space-y-6 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
                       <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
                         Grupos de Categorias
                       </h4>
@@ -1103,9 +1103,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {!isCreatingGroup && (
                       <button
                         onClick={handleOpenCreateGroup}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:opacity-90 transition-all"
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all shrink-0 whitespace-nowrap active:scale-95"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Novo Grupo
+                        <Plus className="w-4 h-4 shrink-0" /> Novo Grupo
                       </button>
                     )}
                   </div>
