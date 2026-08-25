@@ -90,7 +90,58 @@ export default function OrcamentosPage() {
 
   const totalBudget = budgetCategories.reduce((acc: number, cat: any) => acc + cat.budget_limit, 0);
   const budgetDiff = totalBudget - totalSpent;
-  const overBudget = budgetDiff < 0;
+  const isGlobalOverBudget = budgetDiff < 0;
+
+  // Análise detalhada por categoria
+  const exceededCategories = budgetCategories.filter((cat: any) => {
+    const spent = categorySpending[cat.id] || 0;
+    return spent >= cat.budget_limit;
+  });
+
+  const warningCategories = budgetCategories.filter((cat: any) => {
+    const spent = categorySpending[cat.id] || 0;
+    const pct = (spent / cat.budget_limit) * 100;
+    return pct >= 70 && pct < 100;
+  });
+
+  // Determinação granular do estado e estilização do banner superior
+  let bannerState: 'danger' | 'warning' | 'success' = 'success';
+  let bannerTitle = 'Orçamento Controlado';
+  let bannerIcon = <PiggyBank className="w-8 h-8" />;
+  let bannerBg = 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-900/30';
+  let iconBg = 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]';
+  let titleColor = 'text-emerald-700 dark:text-emerald-400';
+  let textSubColor = 'text-emerald-600 dark:text-emerald-500';
+
+  if (exceededCategories.length > 0 || isGlobalOverBudget) {
+    bannerState = 'danger';
+    bannerIcon = <AlertTriangle className="w-8 h-8" />;
+    bannerBg = 'bg-rose-50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30';
+    iconBg = 'bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.3)]';
+    titleColor = 'text-rose-700 dark:text-rose-400';
+    textSubColor = 'text-rose-600 dark:text-rose-500';
+
+    if (exceededCategories.length === 1) {
+      bannerTitle = `Atenção: 1 Orçamento Ultrapassado (${exceededCategories[0].name})`;
+    } else if (exceededCategories.length > 1) {
+      bannerTitle = `Atenção: ${exceededCategories.length} Orçamentos Ultrapassados`;
+    } else {
+      bannerTitle = 'Orçamento Global Ultrapassado';
+    }
+  } else if (warningCategories.length > 0) {
+    bannerState = 'warning';
+    bannerIcon = <AlertTriangle className="w-8 h-8" />;
+    bannerBg = 'bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30';
+    iconBg = 'bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)]';
+    titleColor = 'text-amber-700 dark:text-amber-400';
+    textSubColor = 'text-amber-600 dark:text-amber-500';
+
+    if (warningCategories.length === 1) {
+      bannerTitle = `Aviso: 1 Categoria Próxima do Limite (${warningCategories[0].name})`;
+    } else {
+      bannerTitle = `Aviso: ${warningCategories.length} Categorias Próximas do Limite`;
+    }
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -110,17 +161,23 @@ export default function OrcamentosPage() {
       </div>
 
       {totalBudget > 0 && (
-        <div className={`glass-card p-6 flex items-center gap-6 ${overBudget ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30' : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-900/30'}`}>
-          <div className={`p-4 rounded-xl shrink-0 ${overBudget ? 'bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`}>
-            {overBudget ? <AlertTriangle className="w-8 h-8" /> : <PiggyBank className="w-8 h-8" />}
+        <div className={`glass-card p-6 flex items-center gap-6 ${bannerBg}`}>
+          <div className={`p-4 rounded-xl shrink-0 ${iconBg}`}>
+            {bannerIcon}
           </div>
           <div>
-            <h3 className={`text-xl font-bold ${overBudget ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
-              {overBudget ? 'Orçamento Ultrapassado' : 'Orçamento Controlado'}
+            <h3 className={`text-xl font-bold ${titleColor}`}>
+              {bannerTitle}
             </h3>
-            <p className={`mt-1 font-medium text-lg ${overBudget ? 'text-rose-600 dark:text-rose-500' : 'text-emerald-600 dark:text-emerald-500'}`}>
-              {overBudget ? (
-                <>Passaste o teu limite total em <strong className="text-2xl font-black ml-1">{formatCurrency(Math.abs(budgetDiff))}</strong></>
+            <p className={`mt-1 font-medium text-lg ${textSubColor}`}>
+              {bannerState === 'danger' ? (
+                isGlobalOverBudget ? (
+                  <>Ultrapassaste o teu teto global em <strong className="text-2xl font-black ml-1 text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(budgetDiff))}</strong></>
+                ) : (
+                  <>Ainda assim, no total poupaste <strong className="text-2xl font-black ml-1 text-slate-900 dark:text-white">{formatCurrency(budgetDiff)}</strong> em relação ao teto global</>
+                )
+              ) : bannerState === 'warning' ? (
+                <>Poupaste <strong className="text-2xl font-black ml-1 text-slate-900 dark:text-white">{formatCurrency(budgetDiff)}</strong> em relação ao limite global (tem atenção aos gastos)</>
               ) : (
                 <>Poupaste <strong className="text-2xl font-black ml-1">{formatCurrency(budgetDiff)}</strong> em relação ao teu limite</>
               )}
