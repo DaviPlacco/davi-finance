@@ -74,6 +74,7 @@ class Transaction(Base):
     date = Column(DateTime, nullable=False)
     description = Column(String(500))
     type = Column(Enum(TransactionType), nullable=False)
+    payment_method = Column(String(100), nullable=True)
     receipt_image = Column(Text(length=4294967295), nullable=True)
     is_transfer = Column(Boolean, default=False)
 

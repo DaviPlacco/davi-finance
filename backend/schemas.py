@@ -73,11 +73,21 @@ class TransactionBase(BaseModel):
     date: datetime
     description: Optional[str] = None
     type: TransactionType
+    payment_method: Optional[str] = None
     receipt_image: Optional[str] = None
     is_transfer: Optional[bool] = False
 
 class TransactionCreate(TransactionBase):
     pass
+
+class TransactionUpdate(BaseModel):
+    category_id: Optional[int] = None
+    amount: Optional[float] = None
+    date: Optional[datetime] = None
+    description: Optional[str] = None
+    type: Optional[TransactionType] = None
+    payment_method: Optional[str] = None
+    receipt_image: Optional[str] = None
 
 class TransactionResponse(TransactionBase):
     id: int

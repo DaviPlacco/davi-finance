@@ -53,6 +53,11 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN payment_method VARCHAR(100)"))
+            conn.commit()
+        except Exception:
+            pass
     try:
         db = SessionLocal()
         users = db.query(models.User).all()
@@ -470,6 +475,7 @@ def read_transactions(
     month: Optional[int] = None,
     type: Optional[str] = None,
     category_id: Optional[int] = None,
+    payment_method: Optional[str] = None,
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -482,8 +488,40 @@ def read_transactions(
         query = query.filter(models.Transaction.type == type)
     if category_id:
         query = query.filter(models.Transaction.category_id == category_id)
+    if payment_method:
+        query = query.filter(models.Transaction.payment_method == payment_method)
         
     return query.order_by(models.Transaction.date.desc()).all()
+
+@app.put("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
+def update_transaction(
+    transaction_id: int, 
+    transaction_update: schemas.TransactionUpdate, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    db_transaction = db.query(models.Transaction).filter(
+        models.Transaction.id == transaction_id, 
+        models.Transaction.user_id == current_user.id
+    ).first()
+    if not db_transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    update_data = transaction_update.model_dump(exclude_unset=True)
+    if "category_id" in update_data and update_data["category_id"] is not None:
+        cat = db.query(models.Category).filter(
+            models.Category.id == update_data["category_id"], 
+            models.Category.user_id == current_user.id
+        ).first()
+        if not cat:
+            raise HTTPException(status_code=400, detail="Invalid category_id")
+
+    for key, value in update_data.items():
+        setattr(db_transaction, key, value)
+    
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
 
 @app.delete("/transactions/{transaction_id}")
 def delete_transaction(transaction_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
