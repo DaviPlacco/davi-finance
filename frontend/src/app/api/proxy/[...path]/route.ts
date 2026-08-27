@@ -4,10 +4,11 @@ import { cookies } from 'next/headers';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 async function handleProxy(req: NextRequest, pathArray: string[]) {
-  const path = pathArray.join('/');
+  const cleanPathArray = (pathArray || []).filter(Boolean);
+  const path = cleanPathArray.join('/');
   const url = new URL(req.url);
   const searchParams = url.searchParams.toString();
-  const targetUrl = `${API_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
+  const targetUrl = `${API_URL.replace(/\/+$/, '')}/${path}${searchParams ? `?${searchParams}` : ''}`;
   
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
