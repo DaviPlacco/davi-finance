@@ -58,6 +58,16 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE transactions MODIFY COLUMN receipt_image LONGTEXT"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE users MODIFY COLUMN profile_image LONGTEXT"))
+            conn.commit()
+        except Exception:
+            pass
     try:
         db = SessionLocal()
         users = db.query(models.User).all()
