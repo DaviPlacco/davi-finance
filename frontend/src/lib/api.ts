@@ -5,3 +5,21 @@ import axios from 'axios';
 export const api = axios.create({
   baseURL: '/api/proxy',
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("username");
+        localStorage.removeItem("pl_advisor_last_index");
+        window.dispatchEvent(new Event("auth-logout"));
+        if (!window.location.pathname.startsWith("/login") && window.location.pathname !== "/") {
+          window.location.href = "/";
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
