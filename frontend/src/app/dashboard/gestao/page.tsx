@@ -1034,46 +1034,6 @@ export default function GestaoPage() {
                     })
                   )}
                 </tbody>
-                {transactions.length > 0 && (
-                  <tfoot className="bg-slate-50/90 dark:bg-slate-800/80 border-t-2 border-slate-200/90 dark:border-slate-700/90 font-bold text-xs text-slate-700 dark:text-slate-200">
-                    <tr>
-                      <td className="p-4 text-center">
-                        <Filter className="w-4 h-4 text-primary mx-auto" />
-                      </td>
-                      <td className="p-4 uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400 font-extrabold whitespace-nowrap">
-                        Total {isFilterActive ? "Filtrado" : "Geral"}
-                      </td>
-                      <td className="p-4 text-right font-black text-sm whitespace-nowrap">
-                        {filteredIncomeTotal > 0 && filteredExpenseTotal > 0 ? (
-                          <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">+{formatCurrency(filteredIncomeTotal)}</span>
-                            <span className="text-rose-600 dark:text-rose-400 text-xs font-bold">-{formatCurrency(filteredExpenseTotal)}</span>
-                            <span className="text-slate-900 dark:text-white border-t border-slate-200 dark:border-slate-700 pt-0.5 font-black text-sm">
-                              Saldo: {formatCurrency(filteredNetTotal)}
-                            </span>
-                          </div>
-                        ) : filteredIncomeTotal > 0 ? (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">+{formatCurrency(filteredIncomeTotal)}</span>
-                        ) : (
-                          <span className="text-rose-600 dark:text-rose-400 font-black text-sm">-{formatCurrency(filteredExpenseTotal)}</span>
-                        )}
-                      </td>
-                      <td colSpan={2} className="p-4">
-                        {isFilterActive ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs">
-                            <SlidersHorizontal className="w-3.5 h-3.5" />
-                            <span className="truncate max-w-[200px]">{activeFilterName}</span>
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-500 font-medium">Todas as categorias & métodos</span>
-                        )}
-                      </td>
-                      <td colSpan={3} className="p-4 text-right text-slate-500 dark:text-slate-400 font-medium">
-                        <span className="font-bold text-slate-900 dark:text-white">{transactions.length}</span> {transactions.length === 1 ? "transação encontrada" : "transações encontradas"}
-                      </td>
-                    </tr>
-                  </tfoot>
-                )}
               </table>
             </div>
 
@@ -1192,28 +1152,44 @@ export default function GestaoPage() {
                 })
               )}
             </div>
+            </div>
 
-            {/* Resumo de Totais Mobile */}
+            {/* 🌟 BARRA DE TOTAIS E RESUMO DESKTOP & MOBILE (100% VISÍVEL, FORA DO SCROLL LATERAL) */}
             {transactions.length > 0 && (
-              <div className="p-4 bg-slate-50/90 dark:bg-slate-800/60 border-t border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3 text-xs">
-                <div className="min-w-0">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                    Total {isFilterActive ? "Filtrado" : "Geral"}
+              <div className="border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-wrap">
+                  <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
+                    <Filter className="w-4 h-4" />
+                  </div>
+                  <span className="uppercase tracking-wider text-[11px] font-black text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    Total {isFilterActive ? "Filtrado" : "Geral"}:
                   </span>
-                  <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate block">
-                    {filteredIncomeTotal > 0 && filteredExpenseTotal === 0
-                      ? `+${formatCurrency(filteredIncomeTotal)}`
-                      : filteredExpenseTotal > 0 && filteredIncomeTotal === 0
-                      ? `-${formatCurrency(filteredExpenseTotal)}`
-                      : `Saldo: ${formatCurrency(filteredNetTotal)}`}
+                  <span className="font-black text-sm whitespace-nowrap">
+                    {filteredIncomeTotal > 0 && filteredExpenseTotal > 0 ? (
+                      <span className="text-slate-900 dark:text-white">
+                        Saldo: {formatCurrency(filteredNetTotal)}{" "}
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 ml-1.5">+{formatCurrency(filteredIncomeTotal)}</span>
+                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400 ml-1.5">-{formatCurrency(filteredExpenseTotal)}</span>
+                      </span>
+                    ) : filteredIncomeTotal > 0 ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">+{formatCurrency(filteredIncomeTotal)}</span>
+                    ) : (
+                      <span className="text-rose-600 dark:text-rose-400 font-black text-sm">-{formatCurrency(filteredExpenseTotal)}</span>
+                    )}
                   </span>
+                  {isFilterActive && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <span className="truncate max-w-[180px] sm:max-w-[260px]">{activeFilterName}</span>
+                    </span>
+                  )}
                 </div>
-                <span className="text-slate-500 dark:text-slate-400 font-bold shrink-0 bg-slate-200/60 dark:bg-slate-700/60 px-2.5 py-1 rounded-lg">
-                  {transactions.length} {transactions.length === 1 ? "registo" : "registos"}
-                </span>
+
+                <div className="text-right text-slate-500 dark:text-slate-400 font-bold shrink-0">
+                  <span className="font-extrabold text-slate-900 dark:text-white">{transactions.length}</span> {transactions.length === 1 ? "transação encontrada" : "transações encontradas"}
+                </div>
               </div>
             )}
-            </div>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
