@@ -103,18 +103,57 @@ function NotificationsContent() {
   // Modal mobile de detalhe
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
 
-  // Sincronizar com query param
+  // Função para selecionar notificação por ID (com abertura garantida, reset de filtros se necessário e scroll suave)
+  const selectNotificationById = (id: string) => {
+    const found = monthlyInfo.allNotifications.find((n) => n.id === id);
+    if (found) {
+      setSelectedNotification(found);
+      setCustomMonthlyValue(found.defaultMonthlyValue);
+      markAsRead(found.id);
+
+      // Se a notificação for de um dia futuro do mês, ativa a visualização do catálogo completo
+      const isInUnlocked = monthlyInfo.unlockedNotifications.some((n) => n.id === id);
+      if (!isInUnlocked) {
+        setShowFullCatalog(true);
+      }
+
+      // Limpar busca e filtros de categoria para que o card selecionado fique visível na lista
+      setSearchQuery("");
+      setSelectedCategory("all");
+      setFilterStatus("all");
+
+      setIsMobileDetailOpen(true);
+
+      // Scroll suave até ao card na coluna esquerda
+      setTimeout(() => {
+        const el = document.getElementById(`notif-card-${id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }, 150);
+    }
+  };
+
+  // Sincronizar com query param da URL
   useEffect(() => {
     if (initialId) {
-      const found = monthlyInfo.allNotifications.find((n) => n.id === initialId);
-      if (found) {
-        setSelectedNotification(found);
-        setCustomMonthlyValue(found.defaultMonthlyValue);
-        markAsRead(found.id);
-        setShowFullCatalog(true); // Se veio por link direto, garante visualização do item
-      }
+      selectNotificationById(initialId);
     }
   }, [initialId, monthlyInfo]);
+
+  // Listener para o evento global 'open-notification' disparado pelo Toast Inteligente
+  useEffect(() => {
+    const handleOpenNotif = (e: any) => {
+      const targetId = e?.detail?.id;
+      if (targetId) {
+        selectNotificationById(targetId);
+      }
+    };
+    window.addEventListener("open-notification", handleOpenNotif);
+    return () => {
+      window.removeEventListener("open-notification", handleOpenNotif);
+    };
+  }, [monthlyInfo]);
 
   // Atualizar valor customizado ao trocar de notificação
   const handleSelectNotification = (notif: FinancialNotification) => {
@@ -559,6 +598,7 @@ function NotificationsContent() {
               return (
                 <div
                   key={notif.id}
+                  id={`notif-card-${notif.id}`}
                   onClick={() => handleSelectNotification(notif)}
                   className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer relative group ${
                     isSelected

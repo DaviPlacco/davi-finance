@@ -91,9 +91,18 @@ export function SmartAdvisorToastManager() {
           badgeText = "PATRIMÓNIO & RESERVA";
         }
 
-        const targetUrl = insight.id && insight.id.startsWith("notif_") 
-          ? `/dashboard/notificacoes?id=${insight.id}`
-          : "/dashboard/notificacoes";
+        const targetId = insight.id && insight.id.startsWith("notif_") 
+          ? insight.id 
+          : (insight.relatedNotifId || "notif_001");
+        const targetUrl = `/dashboard/notificacoes?id=${targetId}`;
+
+        const handleNavigateToNotification = () => {
+          toast.dismiss(t);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("open-notification", { detail: { id: targetId } }));
+          }
+          router.push(targetUrl);
+        };
 
         return (
           <div className="w-[380px] sm:w-[440px] max-w-[94vw] bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200/90 dark:border-slate-800/90 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-2xl shadow-slate-900/15 dark:shadow-black/60 relative flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -122,10 +131,7 @@ export function SmartAdvisorToastManager() {
             {/* Rodapé com Botões Espaçosos e Descomprimidos */}
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3">
               <button
-                onClick={() => {
-                  toast.dismiss(t);
-                  router.push(targetUrl);
-                }}
+                onClick={handleNavigateToNotification}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white hover:opacity-90 font-bold text-xs shadow-md shadow-primary/20 transition-all active:scale-95 shrink-0"
               >
                 <BarChart3 className="w-3.5 h-3.5" />
