@@ -215,6 +215,59 @@ function NotificationsContent() {
     );
   }, [selectedNotification, customMonthlyValue]);
 
+  // Tooltip customizado com alto contraste em Dark Mode e Light Mode
+  const renderCustomChartTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const semVal = payload.find((p: any) => p.dataKey === "semEstrategia")?.value;
+      const comVal = payload.find((p: any) => p.dataKey === "comEstrategia")?.value;
+      const diff = comVal !== undefined && semVal !== undefined ? comVal - semVal : 0;
+
+      return (
+        <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-700/80 dark:border-slate-800 p-3.5 rounded-xl shadow-2xl text-white text-xs min-w-[220px] space-y-2">
+          <div className="font-extrabold text-slate-200 border-b border-slate-800 pb-1.5 flex items-center justify-between">
+            <span>{label}</span>
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Projeção</span>
+          </div>
+          <div className="space-y-1.5">
+            {comVal !== undefined && (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-slate-300 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  Com Estratégia:
+                </span>
+                <span className="font-extrabold text-white">
+                  {formatCurrency(comVal)}
+                </span>
+              </div>
+            )}
+
+            {semVal !== undefined && (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  Sem Estratégia:
+                </span>
+                <span className="font-semibold text-slate-300">
+                  {formatCurrency(semVal)}
+                </span>
+              </div>
+            )}
+
+            {diff !== 0 && (
+              <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-slate-800 text-[11px]">
+                <span className="text-emerald-400 font-bold">Ganho Líquido:</span>
+                <span className="font-extrabold text-emerald-400">
+                  +{formatCurrency(diff)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   // Estatísticas Rápidas do Pool Ativo
   const unreadCount = useMemo(() => {
     return activePool.filter((n) => !readIds.has(n.id)).length;
@@ -665,61 +718,51 @@ function NotificationsContent() {
               </span>
             </div>
 
-            <div className="h-60 w-full rounded-2xl bg-slate-50/60 dark:bg-slate-850/50 p-2 sm:p-3 border border-slate-100 dark:border-slate-800">
+            <div className="h-64 w-full rounded-2xl bg-slate-50/70 dark:bg-slate-950/60 p-2.5 sm:p-3.5 border border-slate-200/80 dark:border-slate-800/80 shadow-inner">
               <ResponsiveContainer width="100%" height="100%">
                 {selectedNotification.chartType === "bar" ? (
-                  <BarChart data={projectionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} />
-                    <Tooltip
-                      formatter={(val: any) => [formatCurrency(Number(val)), ""]}
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderRadius: "12px",
-                        border: "1px solid #334155",
-                        color: "#fff",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                      }}
+                  <BarChart data={projectionData} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                    <XAxis dataKey="period" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <Tooltip content={renderCustomChartTooltip} cursor={{ fill: 'rgba(255, 255, 255, 0.06)', radius: 6 }} />
+                    <Legend 
+                      wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} 
+                      formatter={(val) => <span className="text-slate-700 dark:text-slate-300 font-semibold">{val}</span>} 
                     />
-                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px" }} />
-                    <Bar dataKey="semEstrategia" name="Sem a Estratégia" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="semEstrategia" name="Sem a Estratégia" fill="#64748b" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="comEstrategia" name="Aplicando a Estratégia" fill="var(--primary, #6366f1)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 ) : (
-                  <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <AreaChart data={projectionData} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorWithStrategy" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--primary, #6366f1)" stopOpacity={0.4} />
+                        <stop offset="5%" stopColor="var(--primary, #6366f1)" stopOpacity={0.45} />
                         <stop offset="95%" stopColor="var(--primary, #6366f1)" stopOpacity={0.0} />
                       </linearGradient>
                       <linearGradient id="colorWithoutStrategy" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3} />
+                        <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.25} />
                         <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} />
-                    <Tooltip
-                      formatter={(val: any) => [formatCurrency(Number(val)), ""]}
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderRadius: "12px",
-                        border: "1px solid #334155",
-                        color: "#fff",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                      }}
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                    <XAxis dataKey="period" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <Tooltip 
+                      content={renderCustomChartTooltip} 
+                      cursor={{ stroke: 'var(--primary, #6366f1)', strokeWidth: 1.5, strokeDasharray: '4 4' }} 
                     />
-                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "6px" }} />
+                    <Legend 
+                      wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} 
+                      formatter={(val) => <span className="text-slate-700 dark:text-slate-300 font-semibold">{val}</span>} 
+                    />
                     <Area
                       type="monotone"
                       dataKey="semEstrategia"
                       name="Sem a Estratégia"
                       stroke="#94a3b8"
                       strokeWidth={2}
+                      strokeDasharray="4 4"
                       fillOpacity={1}
                       fill="url(#colorWithoutStrategy)"
                     />
@@ -731,6 +774,7 @@ function NotificationsContent() {
                       strokeWidth={3}
                       fillOpacity={1}
                       fill="url(#colorWithStrategy)"
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: '#ffffff', fill: 'var(--primary, #6366f1)' }}
                     />
                   </AreaChart>
                 )}
@@ -829,14 +873,25 @@ function NotificationsContent() {
               </p>
 
               {/* Gráfico Mobile */}
-              <div className="h-52 w-full rounded-2xl bg-slate-50 dark:bg-slate-850/50 p-2 border border-slate-100 dark:border-slate-800">
+              <div className="h-56 w-full rounded-2xl bg-slate-50/70 dark:bg-slate-950/60 p-2 border border-slate-200/80 dark:border-slate-800/80 shadow-inner">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                    <XAxis dataKey="period" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} />
-                    <Tooltip formatter={(val: any) => [formatCurrency(Number(val)), ""]} />
-                    <Area type="monotone" dataKey="comEstrategia" name="Com Estratégia" stroke="var(--primary, #6366f1)" fill="var(--primary, #6366f1)" fillOpacity={0.25} />
+                    <defs>
+                      <linearGradient id="colorWithStrategyMobile" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--primary, #6366f1)" stopOpacity={0.45} />
+                        <stop offset="95%" stopColor="var(--primary, #6366f1)" stopOpacity={0.0} />
+                      </linearGradient>
+                      <linearGradient id="colorWithoutStrategyMobile" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                    <XAxis dataKey="period" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={(v) => `${Math.round(v / 1000)}k€`} tickLine={false} axisLine={{ stroke: 'rgba(148, 163, 184, 0.2)' }} />
+                    <Tooltip content={renderCustomChartTooltip} cursor={{ stroke: 'var(--primary, #6366f1)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
+                    <Area type="monotone" dataKey="semEstrategia" name="Sem Estratégia" stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="3 3" fill="url(#colorWithoutStrategyMobile)" fillOpacity={1} />
+                    <Area type="monotone" dataKey="comEstrategia" name="Com Estratégia" stroke="var(--primary, #6366f1)" strokeWidth={2.5} fill="url(#colorWithStrategyMobile)" fillOpacity={1} activeDot={{ r: 5, strokeWidth: 2, stroke: '#ffffff', fill: 'var(--primary, #6366f1)' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
