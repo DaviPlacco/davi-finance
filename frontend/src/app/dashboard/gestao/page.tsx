@@ -1078,32 +1078,32 @@ export default function GestaoPage() {
                       </div>
                       <div className="flex-1 min-w-0 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
                             {formatDate(t.date)}
                           </span>
                           {isFuture && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100/80 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300/40">
-                              <Clock className="w-2.5 h-2.5" /> Em Espera
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100/80 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300/40 whitespace-nowrap shrink-0">
+                              <Clock className="w-2.5 h-2.5 shrink-0" /> Em Espera
                             </span>
                           )}
                           {t.payment_method && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                              <span>{PAYMENT_METHODS.find(p => p.id === t.payment_method)?.icon || '💳'}</span>
-                              <span>{t.payment_method}</span>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
+                              <span className="shrink-0">{PAYMENT_METHODS.find(p => p.id === t.payment_method)?.icon || '💳'}</span>
+                              <span className="whitespace-nowrap">{t.payment_method}</span>
                             </span>
                           )}
                           {t.receipt_image && (
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); setViewingReceipt(t); }}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 ${
                                 isPdfDocument(t.receipt_image)
                                   ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                                   : 'bg-primary/10 text-primary'
                               }`}
                             >
-                              {isPdfDocument(t.receipt_image) ? <FileText className="w-2.5 h-2.5" /> : <Receipt className="w-2.5 h-2.5" />}
-                              <span>{isPdfDocument(t.receipt_image) ? "PDF" : "Talão"}</span>
+                              {isPdfDocument(t.receipt_image) ? <FileText className="w-2.5 h-2.5 shrink-0" /> : <Receipt className="w-2.5 h-2.5 shrink-0" />}
+                              <span className="whitespace-nowrap">{isPdfDocument(t.receipt_image) ? "PDF" : "Talão"}</span>
                             </button>
                           )}
                         </div>
@@ -1112,14 +1112,14 @@ export default function GestaoPage() {
                         </p>
                         <div>
                           <span 
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0"
                             style={{ 
                               backgroundColor: `${category?.color || '#94a3b8'}15`, 
                               color: category?.color || '#94a3b8' 
                             }}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: category?.color || '#94a3b8' }} />
-                            {category?.name || 'Sem Categoria'}
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: category?.color || '#94a3b8' }} />
+                            <span className="whitespace-nowrap">{category?.name || 'Sem Categoria'}</span>
                           </span>
                         </div>
                       </div>
@@ -1416,16 +1416,16 @@ export default function GestaoPage() {
 
       {/* FLOATING ACTION & SUMMARY BAR (PARA SELEÇÃO EM LOTE OU FILTROS ATIVOS) */}
       <div 
-        className={`fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-lg px-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed top-4 md:top-auto md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94vw] sm:w-auto max-w-lg px-2 sm:px-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           selectedTransactions.length > 0 || isFilterActive
             ? "translate-y-0 opacity-100 scale-100 pointer-events-auto"
-            : "translate-y-8 opacity-0 scale-95 pointer-events-none"
+            : "-translate-y-6 md:translate-y-8 opacity-0 scale-95 pointer-events-none"
         }`}
       >
         {selectedTransactions.length > 0 ? (
           // Modo 1: Seleção em Lote Ativa via Checkbox
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800 rounded-full p-2.5 sm:px-4 shadow-2xl flex items-center justify-between gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="glass-panel border border-slate-200/80 dark:border-slate-800 rounded-full p-2 sm:p-2.5 sm:px-4 shadow-2xl flex items-center justify-between gap-2.5 sm:gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-black shrink-0">
                 {selectedTransactions.length}
               </div>
@@ -1447,14 +1447,14 @@ export default function GestaoPage() {
               <button
                 type="button"
                 onClick={() => setSelectedTransactions([])}
-                className="text-xs px-3 py-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-full transition-colors font-medium"
+                className="text-xs px-2.5 sm:px-3 py-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-full transition-colors font-medium"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={() => setShowBulkDeleteModal(true)}
-                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs px-3.5 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm active:scale-95"
+                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs px-3 sm:px-3.5 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm active:scale-95"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Excluir</span>
@@ -1463,13 +1463,13 @@ export default function GestaoPage() {
           </div>
         ) : isFilterActive ? (
           // Modo 2: Resumo Toast Premium do Filtro Ativo
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800 rounded-full p-2 sm:px-4 shadow-2xl flex items-center justify-between gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="glass-panel border border-slate-200/80 dark:border-slate-800 rounded-full p-2 sm:px-4 shadow-2xl flex items-center justify-between gap-2.5 sm:gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
                 <SlidersHorizontal className="w-3.5 h-3.5" />
               </div>
-              <div className="flex items-center gap-2 truncate">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[120px] sm:max-w-[180px]" title={activeFilterName}>
+              <div className="flex items-center gap-1.5 sm:gap-2 truncate">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[110px] sm:max-w-[180px]" title={activeFilterName}>
                   {activeFilterName}
                 </span>
                 <span className="text-slate-300 dark:text-slate-700">•</span>
@@ -1491,7 +1491,7 @@ export default function GestaoPage() {
             <button
               type="button"
               onClick={handleClearFilters}
-              className="text-xs px-3 py-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center gap-1 font-semibold shrink-0"
+              className="text-xs px-2.5 sm:px-3 py-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center gap-1 font-semibold shrink-0"
               title="Limpar todos os filtros"
             >
               <X className="w-3 h-3" />
