@@ -366,17 +366,17 @@ function NotificationsContent() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* 🌟 Cabeçalho da Página com Contexto Mensal Dinâmico */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
-              <Bell className="w-6 h-6" />
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-1">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-sm shrink-0">
+              <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Notificações & Insights de {monthlyInfo.monthName}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Desbloqueio progressivo de dicas diárias ao longo do mês com análises completas e simulações.
               </p>
             </div>
@@ -387,9 +387,9 @@ function NotificationsContent() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-bold shrink-0 self-start md:self-auto border border-slate-200/80 dark:border-slate-700/80"
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-bold shrink-0 self-start md:self-auto border border-slate-200/80 dark:border-slate-700/80"
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             Marcar visíveis como lidas
           </button>
         )}
@@ -397,20 +397,20 @@ function NotificationsContent() {
 
       {/* 📅 Banner de Calendário & Desbloqueio Diário */}
       <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-primary/20 text-primary shadow-sm shrink-0">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-primary/20 text-primary shadow-sm shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-primary">
                 Dia {monthlyInfo.dayOfMonth} de {monthlyInfo.daysInMonth} • {monthlyInfo.monthName} {monthlyInfo.year}
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                 +{monthlyInfo.todayNewCount} novas hoje
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
               {showFullCatalog 
                 ? `A visualizar o catálogo completo com todas as ${TOTAL_NOTIFICATIONS_COUNT} estratégias financeiras.`
                 : `${monthlyInfo.unlockedCount} de ${TOTAL_NOTIFICATIONS_COUNT} dicas desbloqueadas até ao dia de hoje (libertação de ~3 a 4 por dia).`
@@ -420,82 +420,82 @@ function NotificationsContent() {
         </div>
 
         {/* Alternador de Visualização */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0 self-start sm:self-auto">
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1.5 p-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0">
           <button
             onClick={() => setShowFullCatalog(false)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               !showFullCatalog
                 ? "bg-primary text-white shadow-sm"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
-            Deste Mês ({monthlyInfo.unlockedCount})
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Deste Mês ({monthlyInfo.unlockedCount})</span>
           </button>
 
           <button
             onClick={() => setShowFullCatalog(true)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               showFullCatalog
                 ? "bg-primary text-white shadow-sm"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <Unlock className="w-3.5 h-3.5" />
-            Todo o Catálogo ({TOTAL_NOTIFICATIONS_COUNT})
+            <Unlock className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Catálogo ({TOTAL_NOTIFICATIONS_COUNT})</span>
           </button>
         </div>
       </div>
 
       {/* 📊 KPI Cards de Visão Geral */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">
-              {showFullCatalog ? "Total de Dicas" : "Dicas Desbloqueadas"}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between min-w-0">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+              {showFullCatalog ? "Total de Dicas" : "Desbloqueadas"}
             </span>
-            <BookOpen className="w-4 h-4 text-primary" />
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0 ml-1" />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+          <p className="text-lg sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white truncate">
             {showFullCatalog ? TOTAL_NOTIFICATIONS_COUNT : `${monthlyInfo.unlockedCount}`}
             <span className="text-xs font-semibold text-slate-400 ml-1">/ 105</span>
           </p>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Não Lidas</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between min-w-0">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">Não Lidas</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0 ml-1" />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+          <p className="text-lg sm:text-2xl md:text-3xl font-black text-emerald-600 dark:text-emerald-400 truncate">
             {unreadCount}
           </p>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Favoritas</span>
-            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between min-w-0">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">Favoritas</span>
+            <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-500 shrink-0 ml-1" />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-amber-500">
+          <p className="text-lg sm:text-2xl md:text-3xl font-black text-amber-500 truncate">
             {favoritesCount}
           </p>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Potencial Acumulado</span>
-            <TrendingUp className="w-4 h-4 text-indigo-500" />
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between min-w-0">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">Potencial Acumulado</span>
+            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 shrink-0 ml-1" />
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
+          <p className="text-sm sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate" title={formatCurrency(totalSimulatedSavings5Years)}>
             {formatCurrency(totalSimulatedSavings5Years)}
           </p>
         </div>
       </div>
 
       {/* 🔍 Barra de Pesquisa e Filtros */}
-      <div className="flex flex-col gap-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+      <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
           {/* Input de Busca */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -503,8 +503,8 @@ function NotificationsContent() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Pesquisar por título, estratégia, conceito (ex: juros compostos, 50/30/20, café)..."
-              className="w-full pl-10 pr-9 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all font-medium"
+              placeholder="Pesquisar estratégias, conceitos (50/30/20, juros, café)..."
+              className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all font-medium"
             />
             {searchQuery && (
               <button
@@ -517,10 +517,10 @@ function NotificationsContent() {
           </div>
 
           {/* Abas de Status */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shrink-0">
+          <div className="w-full sm:w-auto grid grid-cols-3 sm:flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shrink-0">
             <button
               onClick={() => setFilterStatus("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-center truncate ${
                 filterStatus === "all"
                   ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -530,7 +530,7 @@ function NotificationsContent() {
             </button>
             <button
               onClick={() => setFilterStatus("unread")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-center truncate ${
                 filterStatus === "unread"
                   ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -540,7 +540,7 @@ function NotificationsContent() {
             </button>
             <button
               onClick={() => setFilterStatus("favorites")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-center truncate ${
                 filterStatus === "favorites"
                   ? "bg-white dark:bg-slate-900 text-amber-500 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
