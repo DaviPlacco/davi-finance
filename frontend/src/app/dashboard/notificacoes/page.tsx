@@ -6,7 +6,6 @@ import {
   Bell, 
   Search, 
   Star, 
-  Check, 
   CheckCircle2, 
   ArrowRight, 
   Sparkles, 
@@ -19,13 +18,13 @@ import {
   Scale, 
   AlertTriangle, 
   Sliders, 
-  Share2, 
   Copy, 
   X, 
   ChevronRight, 
   BookOpen, 
-  Filter, 
-  RotateCcw
+  Calendar,
+  Unlock,
+  Lock
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -40,9 +39,9 @@ import {
   Legend 
 } from "recharts";
 import { 
-  NOTIFICATIONS_CATALOG, 
   FinancialNotification, 
   calculateNotificationProjection, 
+  getMonthlyProgressiveNotifications,
   TOTAL_NOTIFICATIONS_COUNT 
 } from "@/lib/notificationsData";
 import { toast } from "sonner";
@@ -51,6 +50,12 @@ function NotificationsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialId = searchParams.get("id");
+
+  // Informações de progressão mensal
+  const monthlyInfo = useMemo(() => getMonthlyProgressiveNotifications(), []);
+
+  // Visualização: apenas desbloqueadas no mês corrente vs catálogo completo
+  const [showFullCatalog, setShowFullCatalog] = useState(false);
 
   // Estado de persistência de lidas e favoritas
   const [readIds, setReadIds] = useState<Set<string>>(() => {
@@ -76,13 +81,18 @@ function NotificationsContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "unread" | "favorites">("all");
 
+  // Lista base ativa (desbloqueadas ou catálogo completo)
+  const activePool = useMemo(() => {
+    return showFullCatalog ? monthlyInfo.allNotifications : monthlyInfo.unlockedNotifications;
+  }, [showFullCatalog, monthlyInfo]);
+
   // Notificação selecionada para leitura e simulação
   const [selectedNotification, setSelectedNotification] = useState<FinancialNotification>(() => {
     if (initialId) {
-      const found = NOTIFICATIONS_CATALOG.find((n) => n.id === initialId);
+      const found = monthlyInfo.allNotifications.find((n) => n.id === initialId);
       if (found) return found;
     }
-    return NOTIFICATIONS_CATALOG[0];
+    return activePool[0] || monthlyInfo.allNotifications[0];
   });
 
   // Valor personalizado do simulador
@@ -96,14 +106,15 @@ function NotificationsContent() {
   // Sincronizar com query param
   useEffect(() => {
     if (initialId) {
-      const found = NOTIFICATIONS_CATALOG.find((n) => n.id === initialId);
+      const found = monthlyInfo.allNotifications.find((n) => n.id === initialId);
       if (found) {
         setSelectedNotification(found);
         setCustomMonthlyValue(found.defaultMonthlyValue);
         markAsRead(found.id);
+        setShowFullCatalog(true); // Se veio por link direto, garante visualização do item
       }
     }
-  }, [initialId]);
+  }, [initialId, monthlyInfo]);
 
   // Atualizar valor customizado ao trocar de notificação
   const handleSelectNotification = (notif: FinancialNotification) => {
@@ -146,13 +157,16 @@ function NotificationsContent() {
   };
 
   const markAllAsRead = () => {
-    const allIds = new Set(NOTIFICATIONS_CATALOG.map((n) => n.id));
-    setReadIds(allIds);
-    try {
-      localStorage.setItem("pl_notifications_read", JSON.stringify(Array.from(allIds)));
-      window.dispatchEvent(new CustomEvent("notifications-updated"));
-      toast.success("Todas as notificações foram marcadas como lidas!");
-    } catch {}
+    const allUnlockedIds = new Set(activePool.map((n) => n.id));
+    setReadIds((prev) => {
+      const next = new Set([...Array.from(prev), ...Array.from(allUnlockedIds)]);
+      try {
+        localStorage.setItem("pl_notifications_read", JSON.stringify(Array.from(next)));
+        window.dispatchEvent(new CustomEvent("notifications-updated"));
+        toast.success("Todas as notificações ativas foram marcadas como lidas!");
+      } catch {}
+      return next;
+    });
   };
 
   const formatCurrency = (val: number) => {
@@ -168,7 +182,7 @@ function NotificationsContent() {
 
   // Filtragem da lista
   const filteredNotifications = useMemo(() => {
-    return NOTIFICATIONS_CATALOG.filter((notif) => {
+    return activePool.filter((notif) => {
       // Filtro de texto
       const matchesSearch =
         searchQuery.trim() === "" ||
@@ -189,7 +203,7 @@ function NotificationsContent() {
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [searchQuery, selectedCategory, filterStatus, readIds, favoriteIds]);
+  }, [activePool, searchQuery, selectedCategory, filterStatus, readIds, favoriteIds]);
 
   // Projeção calculada para a notificação ativa
   const projectionData = useMemo(() => {
@@ -201,16 +215,19 @@ function NotificationsContent() {
     );
   }, [selectedNotification, customMonthlyValue]);
 
-  // Estatísticas Rápidas
-  const unreadCount = TOTAL_NOTIFICATIONS_COUNT - readIds.size;
+  // Estatísticas Rápidas do Pool Ativo
+  const unreadCount = useMemo(() => {
+    return activePool.filter((n) => !readIds.has(n.id)).length;
+  }, [activePool, readIds]);
+
   const favoritesCount = favoriteIds.size;
 
   const totalSimulatedSavings5Years = useMemo(() => {
     const monthlyRate = 0.08 / 12;
     const months = 60;
-    const totalMonthly = NOTIFICATIONS_CATALOG.slice(0, 10).reduce((acc, n) => acc + n.defaultMonthlyValue, 0);
+    const totalMonthly = activePool.slice(0, 10).reduce((acc, n) => acc + n.defaultMonthlyValue, 0);
     return Math.round(totalMonthly * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate));
-  }, []);
+  }, [activePool]);
 
   const getCategoryIcon = (iconType: string) => {
     switch (iconType) {
@@ -252,9 +269,11 @@ function NotificationsContent() {
     }
   };
 
+  const progressPercentage = Math.round((monthlyInfo.dayOfMonth / monthlyInfo.daysInMonth) * 100);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* 🌟 Cabeçalho da Página */}
+      {/* 🌟 Cabeçalho da Página com Contexto Mensal Dinâmico */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -263,10 +282,10 @@ function NotificationsContent() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Notificações & Insights Estratégicos
+                Notificações & Insights de {monthlyInfo.monthName}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-                Catálogo inteligente com mais de 100 análises detalhadas, projeções em tempo real e gráficos de impacto.
+                Desbloqueio progressivo de dicas diárias ao longo do mês com análises completas e simulações.
               </p>
             </div>
           </div>
@@ -279,20 +298,75 @@ function NotificationsContent() {
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-xs font-bold shrink-0 self-start md:self-auto border border-slate-200/80 dark:border-slate-700/80"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            Marcar todas como lidas
+            Marcar visíveis como lidas
           </button>
         )}
+      </div>
+
+      {/* 📅 Banner de Calendário & Desbloqueio Diário */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-primary/20 text-primary shadow-sm shrink-0">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
+                Dia {monthlyInfo.dayOfMonth} de {monthlyInfo.daysInMonth} • {monthlyInfo.monthName} {monthlyInfo.year}
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                +{monthlyInfo.todayNewCount} novas hoje
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              {showFullCatalog 
+                ? `A visualizar o catálogo completo com todas as ${TOTAL_NOTIFICATIONS_COUNT} estratégias financeiras.`
+                : `${monthlyInfo.unlockedCount} de ${TOTAL_NOTIFICATIONS_COUNT} dicas desbloqueadas até ao dia de hoje (libertação de ~3 a 4 por dia).`
+              }
+            </p>
+          </div>
+        </div>
+
+        {/* Alternador de Visualização */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setShowFullCatalog(false)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              !showFullCatalog
+                ? "bg-primary text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            Deste Mês ({monthlyInfo.unlockedCount})
+          </button>
+
+          <button
+            onClick={() => setShowFullCatalog(true)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              showFullCatalog
+                ? "bg-primary text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <Unlock className="w-3.5 h-3.5" />
+            Todo o Catálogo ({TOTAL_NOTIFICATIONS_COUNT})
+          </button>
+        </div>
       </div>
 
       {/* 📊 KPI Cards de Visão Geral */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Total de Dicas</span>
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {showFullCatalog ? "Total de Dicas" : "Dicas Desbloqueadas"}
+            </span>
             <BookOpen className="w-4 h-4 text-primary" />
           </div>
           <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-            {TOTAL_NOTIFICATIONS_COUNT}
+            {showFullCatalog ? TOTAL_NOTIFICATIONS_COUNT : `${monthlyInfo.unlockedCount}`}
+            <span className="text-xs font-semibold text-slate-400 ml-1">/ 105</span>
           </p>
         </div>
 
@@ -318,7 +392,7 @@ function NotificationsContent() {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Potencial a 5 Anos</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Potencial Acumulado</span>
             <TrendingUp className="w-4 h-4 text-indigo-500" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
@@ -360,7 +434,7 @@ function NotificationsContent() {
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              Todas ({TOTAL_NOTIFICATIONS_COUNT})
+              Todas ({activePool.length})
             </button>
             <button
               onClick={() => setFilterStatus("unread")}
@@ -411,9 +485,9 @@ function NotificationsContent() {
         </div>
       </div>
 
-      {/* 📱💻 Layout Dividido Master-Detail (Desktop 2 Colunas / Mobile Adaptado) */}
+      {/* 📱💻 Layout Dividido Master-Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* COLUNA ESQUERDA: Lista de Notificações (5 colunas no Desktop) */}
+        {/* COLUNA ESQUERDA: Lista de Notificações */}
         <div className="lg:col-span-5 flex flex-col gap-3 max-h-[780px] overflow-y-auto pr-1">
           {filteredNotifications.length === 0 ? (
             <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400">
@@ -421,7 +495,7 @@ function NotificationsContent() {
               <h4 className="text-base font-bold text-slate-900 dark:text-white mb-1">
                 Nenhuma notificação encontrada
               </h4>
-              <p className="text-xs">Tenta ajustar a tua pesquisa ou os filtros de categoria.</p>
+              <p className="text-xs">Tenta ajustar a tua pesquisa ou filtros.</p>
             </div>
           ) : (
             filteredNotifications.map((notif) => {
@@ -493,7 +567,7 @@ function NotificationsContent() {
           )}
         </div>
 
-        {/* COLUNA DIREITA: Painel de Leitura Aprofundada & Gráfico Interativo (7 colunas no Desktop) */}
+        {/* COLUNA DIREITA: Painel de Leitura Aprofundada & Gráfico Interativo */}
         <div className="hidden lg:flex lg:col-span-7 flex-col gap-6 p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-900/5">
           {/* Header da Notificação Ativa */}
           <div className="flex items-start justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
@@ -507,7 +581,7 @@ function NotificationsContent() {
                     {selectedNotification.categoryLabel}
                   </span>
                   <span className="text-xs text-slate-400 dark:text-slate-500">
-                    • Leitura de {selectedNotification.readTime}
+                    • {selectedNotification.publishedAt}
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">

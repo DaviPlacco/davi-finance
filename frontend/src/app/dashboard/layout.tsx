@@ -47,6 +47,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { SmartAdvisorToastManager } from "@/components/SmartAdvisorToast";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { getMonthlyProgressiveNotifications } from "@/lib/notificationsData";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -415,10 +416,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const calculateUnreadNotifs = () => {
     try {
       const saved = localStorage.getItem("pl_notifications_read");
-      const readSet = saved ? new Set(JSON.parse(saved)) : new Set();
-      setUnreadNotifsCount(Math.max(0, 105 - readSet.size));
+      const readSet: Set<string> = saved ? new Set(JSON.parse(saved)) : new Set();
+      const { unlockedNotifications } = getMonthlyProgressiveNotifications();
+      const unreadUnlocked = unlockedNotifications.filter(n => !readSet.has(n.id)).length;
+      setUnreadNotifsCount(unreadUnlocked);
     } catch {
-      setUnreadNotifsCount(105);
+      setUnreadNotifsCount(0);
     }
   };
 
