@@ -854,7 +854,7 @@ def get_summary(
             continue
         selected_transactions.append(t)
         
-    effective_selected_transactions = [t for t in selected_transactions if t.date <= now]
+    effective_selected_transactions = selected_transactions
     
     total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
     total_expense = sum(t.amount for t in effective_selected_transactions if is_expense_settled_in_balance(t))
@@ -862,13 +862,11 @@ def get_summary(
     
     if year and month:
         last_day = calendar.monthrange(year, month)[1]
-        end_of_period = datetime(year, month, last_day, 23, 59, 59)
-        balance_cutoff = min(end_of_period, now)
+        balance_cutoff = datetime(year, month, last_day, 23, 59, 59)
     elif year:
-        end_of_period = datetime(year, 12, 31, 23, 59, 59)
-        balance_cutoff = min(end_of_period, now)
+        balance_cutoff = datetime(year, 12, 31, 23, 59, 59)
     else:
-        balance_cutoff = now
+        balance_cutoff = datetime(2099, 12, 31, 23, 59, 59)
         
     cumulative_income = sum(t.amount for t in all_transactions if t.type == models.TransactionType.INCOME and t.date <= balance_cutoff)
     # Apenas despesas liquidadas (is_expense_settled_in_balance == True) descontam do Saldo Atual (cumulative_balance)
