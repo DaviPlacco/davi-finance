@@ -525,6 +525,7 @@ def read_transactions(
     return query.order_by(models.Transaction.date.desc()).all()
 
 @app.post("/transactions/settle-credit")
+@app.post("/transactions/settle-credit/")
 def settle_credit_transactions(
     request: schemas.SettleCreditRequest,
     db: Session = Depends(get_db),
@@ -827,6 +828,7 @@ def is_expense_pending_credit(t) -> bool:
 
 # ----------------- SUMMARY -----------------
 @app.get("/summary")
+@app.get("/summary/")
 def get_summary(
     year: Optional[int] = None,
     month: Optional[int] = None,
