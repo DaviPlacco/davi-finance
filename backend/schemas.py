@@ -76,7 +76,7 @@ class TransactionBase(BaseModel):
     payment_method: Optional[str] = None
     receipt_image: Optional[str] = None
     is_transfer: Optional[bool] = False
-    is_paid: Optional[bool] = True
+    is_paid: Optional[bool] = None
 
 class TransactionCreate(TransactionBase):
     pass

@@ -479,12 +479,14 @@ def create_transaction(transaction: schemas.TransactionCreate, db: Session = Dep
         raise HTTPException(status_code=400, detail="Invalid category_id")
     
     tx_data = transaction.model_dump()
-    pm = (tx_data.get("payment_method") or "").lower()
+    pm = str(tx_data.get("payment_method") or "").lower()
     is_credit = "crédito" in pm or "credito" in pm
+    raw_type = str(tx_data.get("type") or "").lower()
+    is_expense = "expense" in raw_type or tx_data.get("type") == models.TransactionType.EXPENSE
 
     # Despesas pagas no Crédito entram como pendentes (is_paid = False) para não descontar do Saldo Atual até serem fechadas
-    if tx_data.get("type") == models.TransactionType.EXPENSE and is_credit:
-        if transaction.is_paid is None:
+    if is_expense and is_credit:
+        if transaction.is_paid is not True:
             tx_data["is_paid"] = False
     elif tx_data.get("is_paid") is None:
         tx_data["is_paid"] = True
@@ -834,15 +836,15 @@ def get_summary(
         balance_cutoff = now
         
     cumulative_income = sum(t.amount for t in all_transactions if t.type == models.TransactionType.INCOME and t.date <= balance_cutoff)
-    # Apenas despesas liquidadas (is_paid is not False) descontam do Saldo Atual (cumulative_balance)
-    cumulative_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is not False and t.date <= balance_cutoff)
+    # Apenas despesas liquidadas (is_paid == True / 1) descontam do Saldo Atual (cumulative_balance)
+    cumulative_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and bool(getattr(t, 'is_paid', True)) and t.date <= balance_cutoff)
     cumulative_balance = cumulative_income - cumulative_expense
 
-    pending_credit_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
-    pending_credit_count = sum(1 for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
+    pending_credit_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and not bool(getattr(t, 'is_paid', True)))
+    pending_credit_count = sum(1 for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and not bool(getattr(t, 'is_paid', True)))
     
-    total_pending_credit_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
-    total_pending_credit_count = sum(1 for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
+    total_pending_credit_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and not bool(getattr(t, 'is_paid', True)))
+    total_pending_credit_count = sum(1 for t in all_transactions if t.type == models.TransactionType.EXPENSE and not bool(getattr(t, 'is_paid', True)))
     
     chart_data = []
     
