@@ -850,7 +850,7 @@ def get_summary(
     effective_selected_transactions = [t for t in selected_transactions if t.date <= now]
     
     total_income = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
-    total_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE)
+    total_expense = sum(t.amount for t in effective_selected_transactions if is_expense_settled_in_balance(t))
     total_invested = sum(i.balance for i in investments)
     
     if year and month:
@@ -880,7 +880,7 @@ def get_summary(
         num_days = calendar.monthrange(year, month)[1]
         for day in range(1, num_days + 1):
             daily_income = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
-            daily_expense = sum(t.amount for t in effective_selected_transactions if t.date.day == day and t.type == models.TransactionType.EXPENSE)
+            daily_expense = sum(t.amount for t in effective_selected_transactions if t.date.day == day and is_expense_settled_in_balance(t))
             chart_data.append({
                 "name": str(day),
                 "receitas": daily_income,
@@ -892,7 +892,7 @@ def get_summary(
         months_abbr = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
         for m in range(1, 13):
             monthly_income = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.INCOME and not getattr(t, 'is_transfer', False))
-            monthly_expense = sum(t.amount for t in effective_selected_transactions if t.date.month == m and t.type == models.TransactionType.EXPENSE)
+            monthly_expense = sum(t.amount for t in effective_selected_transactions if t.date.month == m and is_expense_settled_in_balance(t))
             chart_data.append({
                 "name": months_abbr[m-1],
                 "receitas": monthly_income,
