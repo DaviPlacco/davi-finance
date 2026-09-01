@@ -77,6 +77,7 @@ class Transaction(Base):
     payment_method = Column(String(100), nullable=True)
     receipt_image = Column(Text(length=4294967295), nullable=True)
     is_transfer = Column(Boolean, default=False)
+    is_paid = Column(Boolean, default=True, nullable=False)
 
     user = relationship("User", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")

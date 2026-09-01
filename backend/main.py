@@ -59,6 +59,11 @@ def run_migrations():
         except Exception:
             pass
         try:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_paid BOOLEAN DEFAULT 1"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
             conn.execute(text("ALTER TABLE transactions MODIFY COLUMN receipt_image LONGTEXT"))
             conn.commit()
         except Exception:
@@ -473,7 +478,18 @@ def create_transaction(transaction: schemas.TransactionCreate, db: Session = Dep
     if not category:
         raise HTTPException(status_code=400, detail="Invalid category_id")
     
-    db_transaction = models.Transaction(**transaction.model_dump(), user_id=current_user.id)
+    tx_data = transaction.model_dump()
+    pm = (tx_data.get("payment_method") or "").lower()
+    is_credit = "crédito" in pm or "credito" in pm
+
+    # Despesas pagas no Crédito entram como pendentes (is_paid = False) para não descontar do Saldo Atual até serem fechadas
+    if tx_data.get("type") == models.TransactionType.EXPENSE and is_credit:
+        if transaction.is_paid is None:
+            tx_data["is_paid"] = False
+    elif tx_data.get("is_paid") is None:
+        tx_data["is_paid"] = True
+
+    db_transaction = models.Transaction(**tx_data, user_id=current_user.id)
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)
@@ -486,6 +502,7 @@ def read_transactions(
     type: Optional[str] = None,
     category_id: Optional[int] = None,
     payment_method: Optional[str] = None,
+    is_paid: Optional[bool] = None,
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -500,8 +517,44 @@ def read_transactions(
         query = query.filter(models.Transaction.category_id == category_id)
     if payment_method:
         query = query.filter(models.Transaction.payment_method == payment_method)
+    if is_paid is not None:
+        query = query.filter(models.Transaction.is_paid == is_paid)
         
     return query.order_by(models.Transaction.date.desc()).all()
+
+@app.post("/transactions/settle-credit")
+def settle_credit_transactions(
+    request: schemas.SettleCreditRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    query = db.query(models.Transaction).filter(
+        models.Transaction.user_id == current_user.id,
+        models.Transaction.type == models.TransactionType.EXPENSE,
+        models.Transaction.is_paid == False
+    )
+
+    if request.transaction_ids and len(request.transaction_ids) > 0:
+        query = query.filter(models.Transaction.id.in_(request.transaction_ids))
+    elif request.year:
+        query = query.filter(extract('year', models.Transaction.date) == request.year)
+        if request.month:
+            query = query.filter(extract('month', models.Transaction.date) == request.month)
+
+    pending_txs = query.all()
+    if not pending_txs:
+        return {"message": "Nenhum pagamento pendente encontrado.", "count": 0, "total_amount": 0.0}
+
+    total_amount = sum(t.amount for t in pending_txs)
+    for t in pending_txs:
+        t.is_paid = True
+
+    db.commit()
+    return {
+        "message": "Pagamentos de crédito liquidados e debitados do Saldo Atual com sucesso.",
+        "count": len(pending_txs),
+        "total_amount": round(total_amount, 2)
+    }
 
 @app.put("/transactions/{transaction_id}", response_model=schemas.TransactionResponse)
 def update_transaction(
@@ -781,8 +834,15 @@ def get_summary(
         balance_cutoff = now
         
     cumulative_income = sum(t.amount for t in all_transactions if t.type == models.TransactionType.INCOME and t.date <= balance_cutoff)
-    cumulative_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and t.date <= balance_cutoff)
+    # Apenas despesas liquidadas (is_paid is not False) descontam do Saldo Atual (cumulative_balance)
+    cumulative_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is not False and t.date <= balance_cutoff)
     cumulative_balance = cumulative_income - cumulative_expense
+
+    pending_credit_expense = sum(t.amount for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
+    pending_credit_count = sum(1 for t in effective_selected_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
+    
+    total_pending_credit_expense = sum(t.amount for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
+    total_pending_credit_count = sum(1 for t in all_transactions if t.type == models.TransactionType.EXPENSE and getattr(t, 'is_paid', True) is False)
     
     chart_data = []
     
@@ -816,7 +876,11 @@ def get_summary(
         "income": total_income,
         "expense": total_expense,
         "investments": total_invested,
-        "chartData": chart_data
+        "chartData": chart_data,
+        "pendingCreditExpense": pending_credit_expense,
+        "pendingCreditCount": pending_credit_count,
+        "totalPendingCreditExpense": total_pending_credit_expense,
+        "totalPendingCreditCount": total_pending_credit_count
     }
 
 @app.get("/reports/history")

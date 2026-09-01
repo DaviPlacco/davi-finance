@@ -76,6 +76,7 @@ class TransactionBase(BaseModel):
     payment_method: Optional[str] = None
     receipt_image: Optional[str] = None
     is_transfer: Optional[bool] = False
+    is_paid: Optional[bool] = True
 
 class TransactionCreate(TransactionBase):
     pass
@@ -88,12 +89,18 @@ class TransactionUpdate(BaseModel):
     type: Optional[TransactionType] = None
     payment_method: Optional[str] = None
     receipt_image: Optional[str] = None
+    is_paid: Optional[bool] = None
 
 class TransactionResponse(TransactionBase):
     id: int
     user_id: int
     class Config:
         from_attributes = True
+
+class SettleCreditRequest(BaseModel):
+    transaction_ids: Optional[List[int]] = None
+    year: Optional[int] = None
+    month: Optional[int] = None
 
 class WithdrawalRequest(BaseModel):
     amount: float
