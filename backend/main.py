@@ -59,6 +59,11 @@ def run_migrations():
         except Exception:
             pass
         try:
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_paid BOOLEAN DEFAULT TRUE"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
             conn.execute(text("ALTER TABLE transactions ADD COLUMN is_paid BOOLEAN DEFAULT 1"))
             conn.commit()
         except Exception:
