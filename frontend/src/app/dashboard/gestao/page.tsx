@@ -34,47 +34,17 @@ import { useSettings } from "@/lib/SettingsContext";
 import { CategoryIcon, getStoredCategoryIcons } from "@/components/CategoryIcon";
 import { ModalPortal } from "@/components/ModalPortal";
 import { toast } from "sonner";
+import NextImage from "next/image";
+import { buildYearOptions } from "@/lib/dateOptions";
+import {
+  isCreditPayment,
+  isTransactionPendingCredit,
+  markTransactionsAsSettledLocally,
+} from "@/lib/transactionAccounting";
 
 export const isPdfDocument = (dataOrUrl?: string | null) => {
   if (!dataOrUrl) return false;
   return dataOrUrl.startsWith("data:application/pdf") || dataOrUrl.toLowerCase().includes(".pdf");
-};
-
-export const getSettledTransactionIds = (): number[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem("pl_settled_tx_ids");
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-export const markTransactionsAsSettledLocally = (ids: number[]) => {
-  if (typeof window === "undefined" || !ids || ids.length === 0) return;
-  try {
-    const existing = getSettledTransactionIds();
-    const updated = Array.from(new Set([...existing, ...ids.map(Number)]));
-    localStorage.setItem("pl_settled_tx_ids", JSON.stringify(updated));
-  } catch {}
-};
-
-export const isCreditPayment = (pm?: string | null) => {
-  if (!pm) return false;
-  const lower = pm.toLowerCase();
-  return lower.includes("crédito") || lower.includes("credito");
-};
-
-export const isTransactionPendingCredit = (t: any) => {
-  if (!t || t.type !== 'expense') return false;
-  if (!isCreditPayment(t.payment_method)) return false;
-  const settled = getSettledTransactionIds();
-  if (settled.includes(Number(t.id))) return false;
-  return true;
-};
-
-export const isTransactionPaid = (t: any) => {
-  return !isTransactionPendingCredit(t);
 };
 
 export const PAYMENT_METHODS = [
@@ -140,6 +110,9 @@ export default function GestaoPage() {
 
   const [selectedTransactions, setSelectedTransactions] = useState<number[]>([]);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [catToDelete, setCatToDelete] = useState<any | null>(null);
+  const [showDeleteCatModal, setShowDeleteCatModal] = useState(false);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -499,24 +472,28 @@ export default function GestaoPage() {
     }
   };
 
-  const handleDeleteCategory = async (id: string | number) => {
+  const handleDeleteCategory = (id: string | number) => {
     const cat = categories.find(c => c.id.toString() === id.toString());
+    if (!cat) return;
     setCatToDelete(cat);
     setShowDeleteCatModal(true);
   };
 
   const confirmDeleteCategory = async () => {
     if (!catToDelete) return;
+    setIsDeletingCategory(true);
     try {
       await api.delete(`/categories/${catToDelete.id}`);
       fetchData();
       if (categoryId === catToDelete.id.toString()) setCategoryId("");
       if (filterCategoryId === catToDelete.id.toString()) setFilterCategoryId("");
-      toast.error("Categoria eliminada com sucesso.");
+      toast.success("Categoria eliminada com sucesso.");
       setShowDeleteCatModal(false);
       setCatToDelete(null);
     } catch (err) {
       toast.error("Erro ao eliminar a categoria.");
+    } finally {
+      setIsDeletingCategory(false);
     }
   };
 
@@ -850,7 +827,7 @@ export default function GestaoPage() {
                         <span className="text-[9px] font-extrabold uppercase mt-0.5">PDF</span>
                       </div>
                     ) : (
-                      <img src={receiptImage} alt="Comprovativo" className="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" />
+                      <NextImage src={receiptImage} alt="Comprovativo" width={56} height={56} unoptimized className="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -997,12 +974,7 @@ export default function GestaoPage() {
                 <CustomSelect 
                   value={filterYear}
                   onChange={val => setFilterYear(val as string)}
-                  options={[
-                    { value: "", label: "Todos" },
-                    { value: "2024", label: "2024" },
-                    { value: "2025", label: "2025" },
-                    { value: "2026", label: "2026" }
-                  ]}
+                  options={buildYearOptions(true, "")}
                 />
               </div>
               <div className="min-w-0">
@@ -1593,10 +1565,13 @@ export default function GestaoPage() {
                     </a>
                   </div>
                 ) : (
-                  <img 
+                  <NextImage
                     src={viewingReceipt.receipt_image} 
                     alt="Talão da Transação" 
-                    className="max-h-[55vh] w-auto max-w-full rounded-xl object-contain shadow-md border border-slate-200/20"
+                    width={1200}
+                    height={900}
+                    unoptimized
+                    className="max-h-[55vh] h-auto w-auto max-w-full rounded-xl object-contain shadow-md border border-slate-200/20"
                   />
                 )}
               </div>
@@ -1968,7 +1943,7 @@ export default function GestaoPage() {
                           <span className="text-[9px] font-extrabold uppercase mt-0.5">PDF</span>
                         </div>
                       ) : (
-                        <img src={editReceiptImage} alt="Comprovativo" className="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" />
+                        <NextImage src={editReceiptImage} alt="Comprovativo" width={56} height={56} unoptimized className="w-14 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
@@ -2055,6 +2030,22 @@ export default function GestaoPage() {
       />
 
       {/* MODAL DE EXCLUSÃO EM MASSA */}
+      <ConfirmModal
+        isOpen={showDeleteCatModal}
+        title="Eliminar categoria"
+        description={`Tens a certeza de que pretendes eliminar a categoria "${catToDelete?.name || "selecionada"}"? Só é possível eliminar categorias sem transações associadas.`}
+        confirmText="Eliminar Categoria"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeletingCategory}
+        onConfirm={confirmDeleteCategory}
+        onCancel={() => {
+          if (isDeletingCategory) return;
+          setShowDeleteCatModal(false);
+          setCatToDelete(null);
+        }}
+      />
+
       <ConfirmModal
         isOpen={showBulkDeleteModal}
         title={`Excluir ${selectedTransactions.length} Transações`}

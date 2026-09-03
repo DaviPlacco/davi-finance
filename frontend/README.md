@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Davi Finance
 
-## Getting Started
+Aplicação de gestão financeira pessoal com dashboard, transações, categorias, orçamentos, investimentos, metas mensais, previsões, simulações, notificações e relatórios exportáveis.
 
-First, run the development server:
+## Arquitetura
+
+- `frontend/`: Next.js 16, React 19, TypeScript, Tailwind CSS 4 e App Router.
+- `backend/`: FastAPI, SQLAlchemy e autenticação JWT.
+- O frontend comunica com o backend através das rotas BFF em `src/app/api/`. O JWT é guardado num cookie `HttpOnly` e anexado ao proxy no servidor.
+- A base de dados padrão é SQLite. PostgreSQL e MySQL também são suportados através de `DATABASE_URL`.
+
+## Requisitos
+
+- Node.js 20 ou superior.
+- Python 3.9 ou superior.
+
+## Configuração do backend
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn main:app --reload
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Antes de produção, defina obrigatoriamente uma `SECRET_KEY` forte, configure `ENVIRONMENT=production` e limite `ALLOWED_ORIGINS` aos domínios autorizados.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuração do frontend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd frontend
+npm ci
+API_URL=http://localhost:8000 npm run dev
+```
 
-## Learn More
+A aplicação fica disponível em `http://localhost:3000`. `API_URL` é uma variável exclusiva do servidor; `NEXT_PUBLIC_API_URL` continua suportada apenas por compatibilidade.
 
-To learn more about Next.js, take a look at the following resources:
+## Validação
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd frontend
+npm run lint
+npm run typecheck
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Para auditar os headers HTTP, inicie o build com `npm start` e execute `npm run audit:security` noutro terminal.
 
-## Deploy on Vercel
+## Regras do projeto
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Consulte `../AGENTS.md` e `AGENTS.md` antes de alterar a aplicação. Em especial, não são permitidos `window.alert`, `window.confirm` ou `window.prompt`; confirmações e feedback devem usar os componentes customizados e o Sonner.

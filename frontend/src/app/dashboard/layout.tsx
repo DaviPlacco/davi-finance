@@ -49,6 +49,8 @@ import { SmartAdvisorToastManager } from "@/components/SmartAdvisorToast";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { getMonthlyProgressiveNotifications, getStoredReadIds } from "@/lib/notificationsData";
 import { refreshUserFinancialProfile } from "@/lib/financialContext";
+import { calculateTransactionTotals, getSettledTransactionIds } from "@/lib/transactionAccounting";
+import Image from "next/image";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -81,31 +83,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Helpers de Crédito Pendente para cálculo de Saldo Atual na Sidebar
-  const getSettledTransactionIds = (): number[] => {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = localStorage.getItem("pl_settled_tx_ids");
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const isCreditPayment = (pm?: string | null) => {
-    if (!pm) return false;
-    const lower = pm.toLowerCase();
-    return lower.includes("crédito") || lower.includes("credito");
-  };
-
-  const isTransactionPendingCredit = (t: any) => {
-    if (!t || t.type !== 'expense') return false;
-    if (!isCreditPayment(t.payment_method)) return false;
-    const settled = getSettledTransactionIds();
-    if (settled.includes(Number(t.id))) return false;
-    return true;
-  };
-
   // Saldo Atual sincronizado para exibição na sidebar
   const [currentBalance, setCurrentBalance] = useState<number | null>(() => {
     try {
@@ -127,15 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       let calculatedBalance: number | null = null;
 
       if (rawTrans.length > 0) {
-        const totalIncome = rawTrans
-          .filter((t: any) => t.type === 'income' && !t.is_transfer)
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-        
-        const totalPaidExpenses = rawTrans
-          .filter((t: any) => t.type === 'expense' && !isTransactionPendingCredit(t))
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-        
-        calculatedBalance = totalIncome - totalPaidExpenses;
+        calculatedBalance = calculateTransactionTotals(rawTrans, getSettledTransactionIds()).accountBalance;
       } else if (sumRes && sumRes.data && typeof sumRes.data.balance === "number") {
         calculatedBalance = sumRes.data.balance;
       }
@@ -568,7 +537,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
               )}
               {profileImage && (
-                <img src={profileImage} alt="Profile" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
+                <Image src={profileImage} alt="Perfil" width={40} height={40} unoptimized className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
               )}
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-slate-900 dark:text-white leading-tight truncate text-sm sm:text-base">{username}</span>
@@ -581,7 +550,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ) : (
             <div className="flex flex-col items-center gap-2">
               {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
+                <Image src={profileImage} alt="Perfil" width={40} height={40} unoptimized className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm" />
               ) : (
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold border-2 shadow-sm transition-all duration-500 text-xs sm:text-sm"
@@ -1033,7 +1002,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </label>
                     <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200/70 dark:border-slate-800">
                       {profileImage ? (
-                        <img src={profileImage} alt="Preview" className="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md shrink-0" />
+                        <Image src={profileImage} alt="Pré-visualização do perfil" width={56} height={56} unoptimized className="w-14 h-14 rounded-full object-cover border-2 border-primary shadow-md shrink-0" />
                       ) : (
                         <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300 dark:border-slate-700 shrink-0">
                           <User className="w-6 h-6" />

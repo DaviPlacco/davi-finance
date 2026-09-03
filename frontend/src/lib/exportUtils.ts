@@ -3,6 +3,12 @@ import autoTable from "jspdf-autotable";
 import { api } from "./api";
 import { toast } from "sonner";
 
+interface ExportCategory {
+  id: number;
+  name: string;
+  color?: string | null;
+}
+
 // Helper for currency
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-PT", {
@@ -23,9 +29,9 @@ export const exportToCSV = async () => {
       api.get("/categories")
     ]);
     const transactions = transactionsRes.data;
-    const categories = categoriesRes.data;
+    const categories: ExportCategory[] = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
 
-    const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
+    const categoryMap = new Map<number, ExportCategory>(categories.map((category) => [category.id, category]));
 
     let csvContent = "Data,Categoria,Descricao,Tipo,Valor\n";
 
@@ -72,9 +78,9 @@ export const exportToPDF = async () => {
       api.get("/categories")
     ]);
     const transactions = transactionsRes.data;
-    const categories = categoriesRes.data;
+    const categories: ExportCategory[] = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
 
-    const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
+    const categoryMap = new Map<number, ExportCategory>(categories.map((category) => [category.id, category]));
 
     const doc = new jsPDF();
 
@@ -394,10 +400,10 @@ export const exportGeneralMonthlyReportPDF = async (year: number, month: number)
     ]);
     
     const allTransactions = transactionsRes.data;
-    const categories = categoriesRes.data;
+    const categories: ExportCategory[] = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
     const investments = investmentsRes.data;
 
-    const categoryMap = new Map(categories.map((c: any) => [c.id, c]));
+    const categoryMap = new Map<number, ExportCategory>(categories.map((category) => [category.id, category]));
 
     // Filtrar transações pelo mês e ano escolhidos
     const filteredTransactions = allTransactions.filter((t: any) => {

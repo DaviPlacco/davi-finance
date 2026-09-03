@@ -24,6 +24,7 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 import { CategoryIcon, getStoredCategoryIcons } from "@/components/CategoryIcon";
 import { ModalPortal } from "@/components/ModalPortal";
 import { toast } from "sonner";
+import { buildYearOptions } from "@/lib/dateOptions";
 
 const MONTH_NAMES: Record<string, string> = {
   "1": "Janeiro",
@@ -389,11 +390,7 @@ export default function OrcamentosPage() {
               <CustomSelect 
                 value={filterYear} 
                 onChange={setFilterYear as any} 
-                options={[
-                  { value: "Todos", label: "Todos" },
-                  { value: "2025", label: "2025" },
-                  { value: "2026", label: "2026" }
-                ]} 
+                options={buildYearOptions()}
               />
             </div>
             <div className="w-full sm:w-32">
@@ -819,7 +816,7 @@ export default function OrcamentosPage() {
                 {isCreatingNew ? (
                   <CustomSelect
                     value={selectedCategoryId}
-                    onChange={(val) => setSelectedCategoryId(val)}
+                    onChange={(val) => setSelectedCategoryId(String(val))}
                     options={allExpenseCategories.map((c: any) => ({
                       value: String(c.id),
                       label: c.budget_limit ? `${c.name} (Atual: ${formatCurrency(c.budget_limit)})` : c.name,

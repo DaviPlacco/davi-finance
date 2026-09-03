@@ -2,7 +2,8 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import extract, text, func
+from sqlalchemy import extract, text, func, inspect
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import timedelta, datetime
 import calendar
 import random
@@ -10,82 +11,63 @@ from typing import Optional, List
 import models, schemas, auth
 from database import engine, get_db, SessionLocal
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+
+MIGRATION_COLUMNS = (
+    ("transactions", "receipt_image", "TEXT"),
+    ("categories", "group_id", "INTEGER"),
+    ("users", "name", "VARCHAR(255)"),
+    ("users", "profile_image", "TEXT"),
+    ("transactions", "is_transfer", "BOOLEAN DEFAULT FALSE"),
+    ("categories", "icon", "VARCHAR(100)"),
+    ("category_groups", "icon", "VARCHAR(100)"),
+    ("transactions", "payment_method", "VARCHAR(100)"),
+    ("transactions", "is_paid", "BOOLEAN DEFAULT TRUE"),
+)
 
 # Migrations & Table Creation
 def run_migrations():
     models.Base.metadata.create_all(bind=engine)
-    with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE transactions ADD COLUMN receipt_image TEXT"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE categories ADD COLUMN group_id INTEGER"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN name VARCHAR(255)"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN profile_image TEXT"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_transfer BOOLEAN DEFAULT FALSE"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE categories ADD COLUMN icon VARCHAR(100)"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE category_groups ADD COLUMN icon VARCHAR(100)"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE transactions ADD COLUMN payment_method VARCHAR(100)"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_paid BOOLEAN DEFAULT TRUE"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE transactions ADD COLUMN is_paid BOOLEAN DEFAULT 1"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE transactions MODIFY COLUMN receipt_image LONGTEXT"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE users MODIFY COLUMN profile_image LONGTEXT"))
-            conn.commit()
-        except Exception:
-            pass
     try:
-        db = SessionLocal()
-        users = db.query(models.User).all()
-        for u in users:
-            deduplicate_user_categories(u.id, db)
-        db.close()
-    except Exception:
-        pass
+        with engine.begin() as conn:
+            db_inspector = inspect(conn)
+            columns_by_table = {
+                table: {column["name"] for column in db_inspector.get_columns(table)}
+                for table in {migration[0] for migration in MIGRATION_COLUMNS}
+            }
+
+            for table, column, definition in MIGRATION_COLUMNS:
+                if column not in columns_by_table[table]:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {definition}"))
+                    columns_by_table[table].add(column)
+
+            if conn.dialect.name == "mysql":
+                mysql_inspector = inspect(conn)
+                mysql_longtext_columns = (
+                    ("transactions", "receipt_image"),
+                    ("users", "profile_image"),
+                )
+                for table, column in mysql_longtext_columns:
+                    column_info = next(
+                        item for item in mysql_inspector.get_columns(table) if item["name"] == column
+                    )
+                    if str(column_info["type"]).upper() != "LONGTEXT":
+                        conn.execute(text(f"ALTER TABLE {table} MODIFY COLUMN {column} LONGTEXT"))
+    except SQLAlchemyError:
+        logger.exception("Falha ao aplicar migrações automáticas da base de dados.")
+        raise
+
+    try:
+        with SessionLocal() as db:
+            users = db.query(models.User).all()
+            for user in users:
+                deduplicate_user_categories(user.id, db)
+    except SQLAlchemyError:
+        logger.exception("Falha ao unificar categorias duplicadas durante a migração.")
 
 def deduplicate_user_categories(user_id: int, db: Session):
     """
@@ -161,10 +143,17 @@ run_migrations()
 
 app = FastAPI(title="Davi Finance API")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+allow_credentials = "*" not in allowed_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=".*",
-    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -1068,4 +1057,3 @@ def delete_goal(goal_id: int, db: Session = Depends(get_db), current_user: model
     db.delete(db_goal)
     db.commit()
     return {"message": "Goal deleted"}
-

@@ -40,7 +40,10 @@ import {
 import { CustomSelect } from "@/components/CustomSelect";
 import { useSettings } from "@/lib/SettingsContext";
 import { CategoryIcon, getStoredCategoryIcons } from "@/components/CategoryIcon";
+import { calculateTransactionTotals, getSettledTransactionIds } from "@/lib/transactionAccounting";
 import Link from "next/link";
+import Image from "next/image";
+import { buildYearOptions } from "@/lib/dateOptions";
 
 export default function DashboardPage() {
   const { primaryColor } = useSettings();
@@ -76,30 +79,6 @@ export default function DashboardPage() {
   const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
   const [filterMonth, setFilterMonth] = useMonthFilter('current');
 
-  const isCreditPayment = (method: string) => {
-    if (!method) return false;
-    const m = method.toLowerCase();
-    return m.includes('crédito') || m.includes('credito');
-  };
-
-  const getSettledTransactionIds = (): number[] => {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = localStorage.getItem("pl_settled_tx_ids");
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const isTransactionPendingCredit = (t: any) => {
-    if (!t || t.type !== 'expense') return false;
-    if (!isCreditPayment(t.payment_method)) return false;
-    const settled = getSettledTransactionIds();
-    if (settled.includes(Number(t.id))) return false;
-    return true;
-  };
-
   const fetchData = async () => {
     try {
       const query = new URLSearchParams();
@@ -117,27 +96,18 @@ export default function DashboardPage() {
 
       const rawTrans: any[] = Array.isArray(transRes.data) ? transRes.data : [];
       const allTx: any[] = Array.isArray(allTransRes.data) ? allTransRes.data : (rawTrans.length > 0 ? rawTrans : []);
+      const settledIds = getSettledTransactionIds();
       let currentSum = sumRes.data || { balance: 0, income: 0, expense: 0, investments: 0, chartData: [] };
 
       // Se houver transações carregadas, calcular valores reais reconciliados do período filtrado
       if (rawTrans.length > 0) {
-        const totalIncome = rawTrans
-          .filter((t: any) => t.type === 'income' && !t.is_transfer)
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-        
-        const paidExpenses = rawTrans
-          .filter((t: any) => t.type === 'expense' && !isTransactionPendingCredit(t))
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-
-        const pendingExpenses = rawTrans
-          .filter((t: any) => isTransactionPendingCredit(t))
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
+        const periodTotals = calculateTransactionTotals(rawTrans, settledIds);
 
         currentSum = {
           ...currentSum,
-          income: totalIncome,
-          expense: paidExpenses,
-          pendingCreditExpense: pendingExpenses,
+          income: periodTotals.income,
+          expense: periodTotals.paidExpense,
+          pendingCreditExpense: periodTotals.pendingCreditExpense,
         };
       } else {
         currentSum = {
@@ -163,15 +133,8 @@ export default function DashboardPage() {
       // Calcular o Saldo Acumulado Real da Conta até ao final do período selecionado
       let calculatedBalance = 0;
       if (allTx.length > 0) {
-        const cumIncome = allTx
-          .filter((t: any) => t.type === 'income' && !t.is_transfer && new Date(t.date) <= cutoffDate)
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-        
-        const cumPaidExpenses = allTx
-          .filter((t: any) => t.type === 'expense' && !isTransactionPendingCredit(t) && new Date(t.date) <= cutoffDate)
-          .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-        
-        calculatedBalance = cumIncome - cumPaidExpenses;
+        const accountTransactions = allTx.filter((transaction: any) => new Date(transaction.date) <= cutoffDate);
+        calculatedBalance = calculateTransactionTotals(accountTransactions, settledIds).accountBalance;
       } else if (typeof sumRes?.data?.balance === 'number') {
         calculatedBalance = sumRes.data.balance;
       }
@@ -499,8 +462,8 @@ export default function DashboardPage() {
     return value.toString();
   };
 
-  const tooltipFormatter = (value: number) => {
-    return Number(value).toFixed(3);
+  const tooltipFormatter = (value: unknown) => {
+    return Number(value || 0).toFixed(3);
   };
 
   const openGroupModal = (item: any) => {
@@ -529,12 +492,7 @@ export default function DashboardPage() {
             <CustomSelect 
               value={filterYear}
               onChange={val => setFilterYear(val as string)}
-              options={[
-                { value: "", label: "Todos" },
-                { value: "2024", label: "2024" },
-                { value: "2025", label: "2025" },
-                { value: "2026", label: "2026" }
-              ]}
+              options={buildYearOptions(true, "")}
             />
           </div>
           <div className="w-full sm:w-40">
@@ -1628,7 +1586,7 @@ export default function DashboardPage() {
                     }}
                   />
                   {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    <Image src={profileImage} alt="Perfil" width={96} height={96} unoptimized className="w-full h-full object-cover" />
                   ) : (
                     <span 
                       className="text-2xl font-black bg-clip-text text-transparent"

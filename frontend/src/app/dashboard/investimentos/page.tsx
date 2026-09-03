@@ -30,6 +30,12 @@ import { ModalPortal } from "@/components/ModalPortal";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useSettings } from "@/lib/SettingsContext";
+import { buildYearOptions } from "@/lib/dateOptions";
+import {
+  calculateSavingsGoalProgress,
+  calculateTransactionTotals,
+  isTransactionPaid,
+} from "@/lib/transactionAccounting";
 
 interface GoalItem {
   id: number;
@@ -609,14 +615,17 @@ export default function InvestimentosPage() {
       }
     }
 
-    const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + (t.amount || 0), 0);
-    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + (t.amount || 0), 0);
-    const netSavings = totalIncome - totalExpense;
+    const { income: totalIncome, paidExpense: totalExpense, netSavings } = calculateTransactionTotals(transactions);
     const currentSavingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
+    const periodLabel = isAllMonths
+      ? `Ano ${selectedYear}`
+      : new Intl.DateTimeFormat("pt-PT", { month: "long", year: "numeric" })
+          .format(new Date(selectedYear, selectedMonth - 1, 1))
+          .replace(/^./, (character) => character.toUpperCase());
 
     // Despesas por Categoria
     const categorySpending: Record<number, number> = {};
-    transactions.filter(t => t.type === 'expense').forEach(t => {
+    transactions.filter(t => t.type === 'expense' && isTransactionPaid(t)).forEach(t => {
       if (t.category_id) {
         categorySpending[t.category_id] = (categorySpending[t.category_id] || 0) + (t.amount || 0);
       }
@@ -695,16 +704,20 @@ export default function InvestimentosPage() {
         }
       }
       else if (goal.goal_type === "net_savings") {
-        currentVal = netSavings;
-        progress = goal.target_amount > 0 ? (netSavings / goal.target_amount) * 100 : 0;
+        const savingsGoal = calculateSavingsGoalProgress(netSavings, goal.target_amount);
+        currentVal = savingsGoal.currentValue;
+        progress = savingsGoal.progress;
         successScore = Math.min(100, Math.max(0, progress));
-        remainingDistance = Math.max(0, goal.target_amount - netSavings);
+        remainingDistance = savingsGoal.remainingDistance;
         dailyPace = remainingDays > 0 ? remainingDistance / remainingDays : 0;
 
         if (netSavings >= goal.target_amount) {
           status = "completed";
           completedGoalsCount++;
           advisorMessage = `🎉 Meta superada! Poupaste ${formatCurrency(netSavings)} líquidos neste mês.`;
+        } else if (savingsGoal.hasDeficit) {
+          status = "behind";
+          advisorMessage = `💡 O mês está com um défice de ${formatCurrency(savingsGoal.deficitAmount)}. A meta realizada permanece em ${formatCurrency(0)} até receitas e despesas liquidadas voltarem ao positivo.`;
         } else if (isCurrentMonth && (progress >= (currentDay / daysInMonth) * 100)) {
           status = "on_track";
           advisorMessage = `🚀 No rumo certo! Retém mais ${formatCurrency(remainingDistance)} (${formatCurrency(dailyPace)}/dia) para fechar o mês com chave de ouro.`;
@@ -754,7 +767,8 @@ export default function InvestimentosPage() {
       totalGoalsCount: goals.length,
       averageProgress,
       remainingDays,
-      isAllMonths
+      isAllMonths,
+      periodLabel,
     };
   }, [goals, transactions, investments, goalFilterYear, goalFilterMonth]);
 
@@ -857,7 +871,7 @@ export default function InvestimentosPage() {
                 </h3>
                 <div className="grid grid-cols-3 sm:flex gap-2 w-full sm:w-auto">
                   <div className="w-full sm:w-28">
-                    <CustomSelect value={filterYear} onChange={setFilterYear as any} options={[{value:"Todos",label:"Todos"},{value:"2025",label:"2025"},{value:"2026",label:"2026"}]} />
+                    <CustomSelect value={filterYear} onChange={setFilterYear as any} options={buildYearOptions()} />
                   </div>
                   <div className="w-full sm:w-28">
                     <CustomSelect value={filterMonth} onChange={setFilterMonth as any} options={[{value:"Todos",label:"Todos"},{value:"1",label:"Jan"},{value:"2",label:"Fev"},{value:"3",label:"Mar"},{value:"4",label:"Abr"},{value:"5",label:"Mai"},{value:"6",label:"Jun"},{value:"7",label:"Jul"},{value:"8",label:"Ago"},{value:"9",label:"Set"},{value:"10",label:"Out"},{value:"11",label:"Nov"},{value:"12",label:"Dez"}]} />
@@ -876,7 +890,7 @@ export default function InvestimentosPage() {
                     <Tooltip 
                       contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)' }}
                       itemStyle={{ color: '#e2e8f0', fontWeight: 500 }}
-                      formatter={(value: number) => [`${formatCurrency(value)}`, 'Património']}
+                      formatter={(value) => [formatCurrency(Number(value) || 0), 'Património']}
                     />
                     <Line 
                       type="monotone" 
@@ -973,7 +987,7 @@ export default function InvestimentosPage() {
                 <CustomSelect 
                   value={goalFilterYear} 
                   onChange={setGoalFilterYear as any} 
-                  options={[{value:"Todos",label:"Todos"},{value:"2025",label:"2025"},{value:"2026",label:"2026"}]} 
+                  options={buildYearOptions()}
                 />
               </div>
               <div className="w-full sm:w-32">

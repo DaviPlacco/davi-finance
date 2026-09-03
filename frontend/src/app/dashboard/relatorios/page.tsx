@@ -7,6 +7,7 @@ import { CustomSelect } from "@/components/CustomSelect";
 import { toast } from "sonner";
 import { exportGeneralMonthlyReportPDF } from "@/lib/exportUtils";
 import { api } from "@/lib/api";
+import { buildYearOptions } from "@/lib/dateOptions";
 
 type ReportHistory = {
   year: number;
@@ -99,11 +100,7 @@ export default function RelatoriosPage() {
                 <CustomSelect 
                   value={filterYear} 
                   onChange={setFilterYear as any} 
-                  options={[
-                    { value: "2024", label: "2024" },
-                    { value: "2025", label: "2025" },
-                    { value: "2026", label: "2026" }
-                  ]} 
+                  options={buildYearOptions(false)}
                 />
               </div>
               <div>

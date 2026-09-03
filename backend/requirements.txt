@@ -29,5 +29,4 @@ typing-inspection==0.4.2
 typing_extensions==4.16.0
 uvicorn==0.39.0
 pymysql==1.1.0
-pymysql==1.1.0
 slowapi==0.1.10

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,16 +26,14 @@ export async function POST(req: NextRequest) {
         maxAge: 60 * 60 * 24 * 7 // 1 week
       });
       
-      return NextResponse.json({ success: true, ...data });
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('ERRO NO LOGIN (BFF):', error);
     return NextResponse.json({ 
-      error: 'Erro no servidor de autenticação',
-      detalhe: error?.message || String(error),
-      apiUrl: API_URL
+      error: 'Erro no servidor de autenticação'
     }, { status: 500 });
   }
 }

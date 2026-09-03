@@ -8,11 +8,18 @@ from sqlalchemy.orm import Session
 import models
 from database import get_db
 import os
+import warnings
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback_secret_for_development_only_12345")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").strip().lower()
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    if ENVIRONMENT == "production":
+        raise RuntimeError("SECRET_KEY tem de estar configurada em produção.")
+    SECRET_KEY = "fallback_secret_for_development_only_12345"
+    warnings.warn("SECRET_KEY não configurada; a usar chave exclusiva de desenvolvimento.", RuntimeWarning)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
